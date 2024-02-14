@@ -1,5 +1,5 @@
 const {models} = require("../../models/index")
-const CustomError = require("../../../helpers/customError")
+const CustomError = require("../../utils/custom_error")
 
 module.exports.factoryObjectRepository = () =>{
     return Object.freeze({

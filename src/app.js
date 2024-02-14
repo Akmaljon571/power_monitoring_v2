@@ -2,12 +2,10 @@ const express = require('express')
 const http = require('http')
 const cors = require('cors')
 const { Server } = require('socket.io')
-const { connectDB } = require('./utils/connectDB')
-const { socketIO } = require('./utils/socket')
+const { connectDB } = require('./utils/connect_db')
 const { router } = require('./router')
+const { socketIO } = require('./web/socket')
 require('dotenv').config()
-
-// import router from './router/index.js'
 
 const app = express()
 const server = http.createServer(app);

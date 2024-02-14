@@ -1,6 +1,6 @@
 const mongoose = require("mongoose")
 const { models } = require("../../models")
-const CustomError = require("../../../helpers/customError")
+const CustomError = require("../../utils/custom_error")
 
 module.exports.calculationObjectRepository = () => {
     return Object.freeze({

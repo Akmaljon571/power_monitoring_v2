@@ -1,7 +1,7 @@
 const { adminModel } = require("../models")
-const CustomError = require("../../helpers/customError")
-module.exports.adminRepository = () => {
+const CustomError = require("../../utils/custom_error")
 
+module.exports.adminRepository = () => {
     return Object.freeze({
         findAll,
         findById,

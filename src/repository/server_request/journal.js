@@ -1,6 +1,6 @@
-const {models} = require("../../models/index")
 const { default: mongoose } = require("mongoose");
-const CustomError = require("../../../helpers/customError");
+const {models} = require("../../models/index")
+const CustomError = require("../../utils/custom_error")
 
 module.exports.journalRepository = () => {
     return Object.freeze({

@@ -1,5 +1,5 @@
 const { models } = require("../../models");
-const CustomError = require("../../../helpers/customError");
+const CustomError = require("../../utils/custom_error")
 
 module.exports.billingRepository = () => {
     return Object.freeze({

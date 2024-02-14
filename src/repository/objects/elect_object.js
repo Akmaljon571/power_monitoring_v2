@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const { models } = require("../../models/index")
-const CustomError = require("../../../helpers/customError")
-const { parameterShortNamesList_enum } = require("../../../validators/meter")
+const CustomError = require("../../utils/custom_error")
+const { parameterShortNamesList_enum } = require("../../validation/meter")
 
 module.exports.electObjectRepository = () => {
     return Object.freeze({
