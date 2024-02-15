@@ -15,8 +15,3 @@ module.exports.validatorUpdateAdmin = Joi.object().keys({
    role: Joi.string().valid("super"),
    open_page: Joi.array(),
 }).required()
-
-module.exports.validateDeleteAdmin = Joi.object().keys({
-   id: Joi.string().required(),
-}).required()
-////

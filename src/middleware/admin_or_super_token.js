@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 
-module.exports.adminToken = (req, res, next) => {
+module.exports.adminToken_superToken = (req, res, next) => {
     const token = req.headers['token'];
 
     if (!token) {
@@ -12,7 +12,7 @@ module.exports.adminToken = (req, res, next) => {
             return res.status(403).json({ status: 403, error: 'Forbidden' });
         }
 
-        if (value.role === 'super') {
+        if (value.role === 'admin' || value.role === 'super' ) {
             next();
         } else {
             return res.status(403).json({ status: 403, error: 'Forbidden' });

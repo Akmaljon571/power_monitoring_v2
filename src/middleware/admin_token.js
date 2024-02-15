@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 
 module.exports.adminToken = (req, res, next) => {
-    const token = req.headers['authorization'];
+    const token = req.headers['token'];
 
     if (!token) {
         return res.status(401).json({ status: 401, error: 'Unauthorized' });

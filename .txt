@@ -1,1 +1,2 @@
 admin listini super ham kora oladimi ? [GET]
+tokenlarni headersdan emas cookie ga ozgartirib qoyish

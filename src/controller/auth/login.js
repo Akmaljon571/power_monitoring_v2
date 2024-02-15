@@ -25,8 +25,8 @@ module.exports.authorization = async (req, res) => {
                             expiresIn: "10h",
                         }
                     );
-                    const ok = JSON.stringify(user)
-                    res.status(200).json({ status: 200, data: { token, user: JSON.parse(ok) }, error: null })
+                    res.cookie('token', token);
+                    res.status(200).json({ status: 200, data: user, error: null })
                 }
             } else {
                 res.status(401).json({ status: 401, error: "User No Active", data: null})
