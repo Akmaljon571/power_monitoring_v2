@@ -1,4 +1,4 @@
-const { models } = require("../../models");
+const { electObjectModel, meterModel, billingModel } = require("../../models");
 const CustomError = require("../../utils/custom_error")
 
 module.exports.billingRepository = () => {
@@ -10,7 +10,7 @@ module.exports.billingRepository = () => {
 
     async function insert(args){
         try{
-            const newJournalDocument = await models().billingModel.insertMany(args)
+            const newJournalDocument = await billingModel.insertMany(args)
             return newJournalDocument[0]
         }catch(err){
             throw new CustomError(500, err.message)
@@ -22,7 +22,7 @@ module.exports.billingRepository = () => {
             const twoDaysAgo = new Date();
             twoDaysAgo.setDate(new Date().getDate()-1)
             twoDaysAgo.setHours(0,0,0,0)
-            const document = await models().billingModel.findOne({meter_id: new mongoose.Types.ObjectId(id), date: twoDaysAgo})
+            const document = await billingModel.findOne({meter_id: new mongoose.Types.ObjectId(id), date: twoDaysAgo})
             return document
         }catch(err){
           throw new CustomError(500, err.message) 
@@ -35,7 +35,7 @@ module.exports.billingRepository = () => {
             const feeder = {}
             const result = {}
             const callback = async({ id, oneDate, twoDate }) => {
-              const find = await models().electObjectModel.find({ parent_object: id });
+              const find = await electObjectModel.find({ parent_object: id });
               for (let i = 0; i < find.length; i++) {
                   const currentItem = find[i];
                   if (currentItem.type === 'feeder') {
@@ -58,13 +58,13 @@ module.exports.billingRepository = () => {
             fDate.setHours(0,0,0,0)
 
             for (let i = 0; i < meters.length; i++) {
-              const billing = await models().billingModel.find({ meter_id: meters[i].meter_id })
+              const billing = await billingModel.find({ meter_id: meters[i].meter_id })
               const oneData = billing.find(e => new Date(e.date) - sDate == 0)                                
               const twoData = billing.find(e => new Date(e.date) - fDate == 0)
               if(!oneData || !twoData)
                 return {status: 404, message: "Birinchi yoki ikkinchi kunda ma'lumotlar yoq"}
 
-              const meter = await models().meterModel.findOne({ _id: meters[i].meter_id })
+              const meter = await meterModel.findOne({ _id: meters[i].meter_id })
               if(!Array.isArray(result[feeder[meters[i].parent_object].parent])) {
                 result[feeder[meters[i].parent_object].parent] = []
               }

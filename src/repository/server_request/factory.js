@@ -1,4 +1,4 @@
-const {models} = require("../../models/index")
+const {factoryModel} = require("../../models")
 const CustomError = require("../../utils/custom_error")
 
 module.exports.factoryObjectRepository = () =>{
@@ -11,7 +11,7 @@ module.exports.factoryObjectRepository = () =>{
 
     async function countDocuments(args){
         try {
-            return await models().factoryModel.countDocuments(args)
+            return await factoryModel.countDocuments(args)
         } catch (err) {
             throw new CustomError(500, err.message)
         }
@@ -19,7 +19,7 @@ module.exports.factoryObjectRepository = () =>{
 
     async function insert(args){
         try{
-          const factoryDocuments = await models().factoryModel.insertMany(args)
+          const factoryDocuments = await factoryModel.insertMany(args)
           return factoryDocuments
         }catch(err){
             throw new CustomError(500, err.message)
@@ -48,7 +48,7 @@ module.exports.factoryObjectRepository = () =>{
                     }
                 }
             ]
-            const  factoryDocuments = await models().factoryModel.aggregate(pipArray)
+            const  factoryDocuments = await factoryModel.aggregate(pipArray)
             return [...factoryDocuments]
         }catch(err){
             throw new CustomError(500, err.message)
@@ -80,7 +80,7 @@ module.exports.factoryObjectRepository = () =>{
             }
         ]
 
-        const factoryDocument = await models().factoryModel.aggregate(pipArray)
+        const factoryDocument = await factoryModel.aggregate(pipArray)
         return factoryDocument[0]
     }
 }

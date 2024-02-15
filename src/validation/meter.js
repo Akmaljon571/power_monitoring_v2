@@ -49,56 +49,45 @@ const meter_form = ["uspd","meter"]
 
 const period_type = ["weekly","monthly"]
 
-module.exports.validatorCreateMeter = async (data) => {
-   try {
-      const schema = Joi.object({
-         connection_address: Joi.string().required(),
-         connection_channel: Joi.valid(...connection_channel).required(),
-         id: Joi.string().required(),
-         ip_address: Joi.string().required(),
-         meter_form: Joi.valid(...meter_form).required(),
-         meter_type: Joi.valid(...meter_type).required(),
-         name: Joi.string().required(),
-         number_meter: Joi.string().required(),
-         password: Joi.string().required(),
-         port: Joi.number().required(),
-         waiting_time: Joi.number(),
-         interval_time: Joi.number(),
-         pause_time: Joi.number(),
-         package_size: Joi.number(),
-         time_difference: Joi.number(),
-         days_of_month: Joi.array().items(Joi.number()),
-         period_type: Joi.valid(...period_type),
-         data_polling_length: Joi.string(),
-         data_refresh_length: Joi.string(),
+module.exports.createMeterJoi = Joi.object({
+   connection_address: Joi.string().required(),
+   connection_channel: Joi.valid(...connection_channel).required(),
+   id: Joi.string().required(),
+   ip_address: Joi.string().required(),
+   meter_form: Joi.valid(...meter_form).required(),
+   meter_type: Joi.valid(...meter_type).required(),
+   name: Joi.string().required(),
+   number_meter: Joi.string().required(),
+   password: Joi.string().required(),
+   port: Joi.number().required(),
+   waiting_time: Joi.number(),
+   interval_time: Joi.number(),
+   pause_time: Joi.number(),
+   package_size: Joi.number(),
+   time_difference: Joi.number(),
+   days_of_month: Joi.array().items(Joi.number()),
+   period_type: Joi.valid(...period_type),
+   data_polling_length: Joi.string(),
+   data_refresh_length: Joi.string(),
 
-         hours_of_day: Joi.array().items(
-            Joi.object({
-               hour: Joi.number().required(),
-               minutes: Joi.array().items(Joi.number()).required()
-            })
-         ).optional(),
+   hours_of_day: Joi.array().items(
+      Joi.object({
+         hour: Joi.number().required(),
+         minutes: Joi.array().items(Joi.number()).required()
+      })
+   ).optional(),
 
-         parameters: Joi.array().items(
-         Joi.object({
-               channel_full_id: Joi.valid(...channelFullIdNameList).required(),
-               param_name: Joi.string().required(),
-               param_short_name: Joi.valid(...parameterShortNamesList).required(),
-               parameter_type: Joi.valid(...parameter_type).required(),
-               status: Joi.valid(...status).required(),
-               text: Joi.string().optional().allow('')
-         })
-         ).required(),
-      }).required()
-      const { error } = schema.validate(data)
-      if (error) {
-         throw new CustomError(400, error.message)
-      }
-   } catch (error) {
-      console.log(error)
-      throw new CustomError(400, error.message)
-   }
-}
+   parameters: Joi.array().items(
+   Joi.object({
+         channel_full_id: Joi.valid(...channelFullIdNameList).required(),
+         param_name: Joi.string().required(),
+         param_short_name: Joi.valid(...parameterShortNamesList).required(),
+         parameter_type: Joi.valid(...parameter_type).required(),
+         status: Joi.valid(...status).required(),
+         text: Joi.string().optional().allow('')
+   })).required(),
+}).required()
+
 
 module.exports.meter_type_enum = meter_type
 module.exports.connection_channel_enum = connection_channel

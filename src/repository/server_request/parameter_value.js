@@ -1,5 +1,5 @@
-const { default: mongoose } = require("mongoose")
-const { models } = require("../../models/index")
+const mongoose = require("mongoose")
+const { parameterValueModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 
 module.exports.parameterValueRepository = () => {
@@ -13,7 +13,7 @@ module.exports.parameterValueRepository = () => {
     async function insert(model,args) {
         try {
             let modelname = model ? "parameter_values_"+ model: "parameter_values"
-            await models().parameterValueModel(modelname).insertMany(args)
+            await parameterValueModel(modelname).insertMany(args)
         } catch (err) {
             throw new CustomError(500, err.message)
         }
@@ -59,7 +59,7 @@ module.exports.parameterValueRepository = () => {
                 
             }
 
-            const parameterDocument = await models().parameterValueModel(modelname).aggregate(pipArray)
+            const parameterDocument = await parameterValueModel(modelname).aggregate(pipArray)
             return parameterDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -82,10 +82,10 @@ module.exports.parameterValueRepository = () => {
             ]
 
 
-            let parameterDocument = await models().parameterValueModel(modelname).aggregate(pipArray)
+            let parameterDocument = await parameterValueModel(modelname).aggregate(pipArray)
             if(parameterDocument.length === 0){
                 modelname = "parameter_values_" + new Date().getFullYear() + (new Date().getMonth())
-                parameterDocument = await models().parameterValueModel(modelname).aggregate(pipArray)
+                parameterDocument = await parameterValueModel(modelname).aggregate(pipArray)
              }
             return parameterDocument[0]
         } catch (err) {
@@ -96,7 +96,7 @@ module.exports.parameterValueRepository = () => {
     async function findTodayList(parameter, date) {
         try {
             date.setUTCHours(0)
-            const parameterDocument = await models().parameterValueModel('parameter_values').find({parameter})
+            const parameterDocument = await parameterValueModel('parameter_values').find({parameter})
             const todayDatas = parameterDocument.filter(e => new Date(e.date) - new Date(date) >= 0).sort((a, b) => a.date - b.date)
             let obj = {
                 time: 0,

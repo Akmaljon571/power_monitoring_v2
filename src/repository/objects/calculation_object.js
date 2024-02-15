@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const { models } = require("../../models")
+const { meterModel, calculationObjectModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 
 module.exports.calculationObjectRepository = () => {
@@ -24,7 +24,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function countDocuments(args){
         try {
-            return await models().calculationObjectModel.countDocuments(args)
+            return await calculationObjectModel.countDocuments(args)
         } catch (err) {
             throw new CustomError(500, err.message)
         }
@@ -32,7 +32,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function insert(args) {
         try {
-            const objectDocuments = await models().calculationObjectModel.create(args)
+            const objectDocuments = await calculationObjectModel.create(args)
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -41,8 +41,8 @@ module.exports.calculationObjectRepository = () => {
 
     async function listUse() {
         try {
-            const list = await models().calculationObjectModel.find()
-            const meters = await models().meterModel.find()
+            const list = await calculationObjectModel.find()
+            const meters = await meterModel.find()
             return meters.map(e => list.find(w => w.meter_id == e._id) ? '' : {id: String(e._id), name: e.name}).filter(e => e)
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -51,7 +51,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function update(_id, query) {
         try {
-            const objectDocuments = await models().calculationObjectModel.updateOne({ _id }, { $set: query})
+            const objectDocuments = await calculationObjectModel.updateOne({ _id }, { $set: query})
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -60,7 +60,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function findById(id) {
         try {
-            const objectDocuments = await models().calculationObjectModel.findById(id)
+            const objectDocuments = await calculationObjectModel.findById(id)
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -69,7 +69,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function findParentMeter(id) {
         try {
-            const getMeter = await models().calculationObjectModel.findOne({ parent_object: id })
+            const getMeter = await calculationObjectModel.findOne({ parent_object: id })
             return getMeter
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -78,7 +78,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function findMeter(id) {
         try {
-            const objectDocuments = await models().calculationObjectModel.findOne({ meter_id: id })
+            const objectDocuments = await calculationObjectModel.findOne({ meter_id: id })
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -87,12 +87,12 @@ module.exports.calculationObjectRepository = () => {
 
     async function remove(id) {
         try {
-            const find = await models().calculationObjectModel.findOne({ parent_object: id }, )
+            const find = await calculationObjectModel.findOne({ parent_object: id }, )
             if(find) {
-                await models().calculationObjectModel.deleteOne({ _id: id })
+                await calculationObjectModel.deleteOne({ _id: id })
                 remove(find._id)
             }
-            await models().calculationObjectModel.deleteOne({ _id: id })
+            await calculationObjectModel.deleteOne({ _id: id })
             return 'ok'
         } catch (error) {
             throw new CustomError(404, "ElectObject Not Found")
@@ -155,7 +155,7 @@ module.exports.calculationObjectRepository = () => {
                     }
                 })
             }
-            return await models().calculationObjectModel.aggregate(pipArray)
+            return await calculationObjectModel.aggregate(pipArray)
 
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -216,7 +216,7 @@ module.exports.calculationObjectRepository = () => {
                     }
                 }
             ]
-            const electObjectDocument = await models().calculationObjectModel.aggregate(pipArray)
+            const electObjectDocument = await calculationObjectModel.aggregate(pipArray)
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -361,7 +361,7 @@ module.exports.calculationObjectRepository = () => {
                 }
             ]
 
-            const electObjectDocument = await models().calculationObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
+            const electObjectDocument = await calculationObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
              console.log(electObjectDocument,"electObjectDocument")
             return electObjectDocument[0]
         } catch (err) {
@@ -482,7 +482,7 @@ module.exports.calculationObjectRepository = () => {
                 }
             ]
 
-            const electObjectDocument = await models().calculationObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
+            const electObjectDocument = await calculationObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -619,7 +619,7 @@ module.exports.calculationObjectRepository = () => {
                 }
             ]
 
-            const electObjectDocument = await models().calculationObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
+            const electObjectDocument = await calculationObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
             console.log(electObjectDocument[0])
             return electObjectDocument[0]
         } catch (err) {
@@ -747,7 +747,7 @@ module.exports.calculationObjectRepository = () => {
                 }
             ]
      
-            const calculationDocuments = await models().calculationObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
+            const calculationDocuments = await calculationObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
             return calculationDocuments[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -908,7 +908,7 @@ module.exports.calculationObjectRepository = () => {
                 }
             ]
 
-            const electObjectDocument = await models().calculationObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
+            const electObjectDocument = await calculationObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -1009,7 +1009,7 @@ module.exports.calculationObjectRepository = () => {
                 }
             ]
 
-            const realtimeDocuments = await models().electObjectModel.aggregate(electObjectPipelines)
+            const realtimeDocuments = await calculationObjectModel.aggregate(electObjectPipelines)
             return realtimeDocuments[0]
         } catch (err) {
             throw new CustomError(500, err.message)

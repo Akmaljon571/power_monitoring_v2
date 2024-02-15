@@ -1,4 +1,4 @@
-const {models} = require("../../models/index")
+const { previousModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 
 module.exports.previousObjectRepository = () =>{
@@ -16,7 +16,7 @@ module.exports.previousObjectRepository = () =>{
             if(meter.data_polling_length) {
                 date.setDate(new Date().getDate() - Number(meter.data_polling_length))
             }
-            await models().previousModel.create({
+            await previousModel.create({
                 archive: date,
                 billing: date,
                 meter_id: meter._id
@@ -29,8 +29,8 @@ module.exports.previousObjectRepository = () =>{
 
     async function update(meter_id, archive='', billing='') {
         try {
-            const find = await models().previousModel.findOne({ meter_id })
-            await models().previousModel.updateOne(
+            const find = await previousModel.findOne({ meter_id })
+            await previousModel.updateOne(
                 { meter_id: meter_id },
                 { $set: { archive: archive || find.archive, billing: billing || find.billing } }
             )
@@ -41,7 +41,7 @@ module.exports.previousObjectRepository = () =>{
 
     async function updateStatus(meter_id, status) {
         try {
-            await models().previousModel.updateOne(
+            await previousModel.updateOne(
                 { meter_id: meter_id },
                 { $set: { status } }
             )
@@ -51,6 +51,6 @@ module.exports.previousObjectRepository = () =>{
     }
 
     async function findOne(meter_id) {
-        return await models().previousModel.findOne({ meter_id:meter_id })
+        return await previousModel.findOne({ meter_id:meter_id })
     }
 }

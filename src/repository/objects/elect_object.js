@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const { models } = require("../../models/index")
+const { electObjectModel, folderModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 const { parameterShortNamesList_enum } = require("../../validation/meter")
 

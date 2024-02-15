@@ -1,4 +1,4 @@
-const { models } = require("../../models/index")
+const { parameterModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 
 module.exports.parameterRepository = () => {
@@ -13,7 +13,7 @@ module.exports.parameterRepository = () => {
 
     async function countDocuments(args) {
         try {
-            return await models().parameterModel.countDocuments(args)
+            return await parameterModel.countDocuments(args)
         } catch (err) {
             throw new CustomError(500, err.message)
         }
@@ -21,7 +21,7 @@ module.exports.parameterRepository = () => {
 
     async function findMeter(query) {
         try {
-            const paramDocuments = await models().parameterModel.find(query)
+            const paramDocuments = await parameterModel.find(query)
             return paramDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -31,7 +31,7 @@ module.exports.parameterRepository = () => {
     async function findOne(query) {
         try {
             let pipArray = [{ $match: { ...query } }]
-            const paramDocuments = await models().parameterModel.aggregate(pipArray)
+            const paramDocuments = await parameterModel.aggregate(pipArray)
 
             return paramDocuments[0]
         } catch (err) {
@@ -63,7 +63,7 @@ module.exports.parameterRepository = () => {
                 })
             }
 
-            const paramDocuments = await models().parameterModel.aggregate(pipArray)
+            const paramDocuments = await parameterModel.aggregate(pipArray)
 
             return paramDocuments
         } catch (err) {
@@ -88,7 +88,7 @@ module.exports.parameterRepository = () => {
                 }
             })
 
-            await models().parameterModel.insertMany(newParams)
+            await parameterModel.insertMany(newParams)
             return parameterIds
         } catch (err) {
             throw new CustomError(err.status, err.message)
@@ -99,7 +99,7 @@ module.exports.parameterRepository = () => {
         try {
             let promisArray = []
             args = args.map((element) => {
-                return models().parameterModel.updateOne({ _id: element._id }, { status: element.status })
+                return parameterModel.updateOne({ _id: element._id }, { status: element.status })
             })
 
             Promise.all(args).then((result) => {

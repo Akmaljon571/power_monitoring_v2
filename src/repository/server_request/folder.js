@@ -1,5 +1,5 @@
-const { default: mongoose } = require("mongoose");
-const { models } = require("../../models/index");
+const mongoose = require("mongoose");
+const { folderModel } = require("../../models");
 const CustomError = require("../../utils/custom_error")
 
 module.exports.folderObjectRepository = () => {
@@ -11,7 +11,7 @@ module.exports.folderObjectRepository = () => {
   });
 
   async function insert(args) {
-    const newFolderDocument = await models().folderModel.insertMany(args);
+    const newFolderDocument = await folderModel.insertMany(args);
 
     return newFolderDocument;
   }
@@ -23,9 +23,7 @@ module.exports.folderObjectRepository = () => {
       const pipArray = [
         {
           $match: {
-            // parent_id: {
             $or: [{ parent_id: { $exists: false } }, { parent_id: null }],
-            // }
           },
         },
         {
@@ -75,7 +73,7 @@ module.exports.folderObjectRepository = () => {
         },
       ];
 
-      const folders = await models().folderModel.aggregate(pipArray, {
+      const folders = await folderModel.aggregate(pipArray, {
         maxTimeMS: 50000,
       });
       return folders;
@@ -138,17 +136,9 @@ module.exports.folderObjectRepository = () => {
             preserveNullAndEmptyArrays: true,
           },
         },
-        // {
-        //   $sort: {
-        //     date: -1,
-        //   },
-        // },
-        // {
-        //   $limit: 1,
-        // },
       ];
 
-      const folder = await models().folderModel.aggregate(pipArray, {
+      const folder = await folderModel.aggregate(pipArray, {
         maxTimeMS: 50000,
       });
       if (folder[0].meter_detail) {
@@ -163,7 +153,7 @@ module.exports.folderObjectRepository = () => {
 
   async function updateOne(id, args) {
     try {
-      const folderDocument = await models().folderModel.updateOne({
+      const folderDocument = await folderModel.updateOne({
         parent_id: new mongoose.Types.ObjectId(id)
       }, args);
       return folderDocument;

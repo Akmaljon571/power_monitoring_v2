@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const { models } = require("../../models/index")
+const { meterModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 
 module.exports.meterRepository = () => {
@@ -15,7 +15,7 @@ module.exports.meterRepository = () => {
 
     async function countDocuments(args){
         try {
-            return await models().meterModel.countDocuments(args)
+            return await meterModel.countDocuments(args)
         } catch (err) {
             throw new CustomError(500, err.message)
         }
@@ -23,7 +23,7 @@ module.exports.meterRepository = () => {
 
     async function insert(args) {
         try {
-            const newMeterDocument = await models().meterModel.create(args)
+            const newMeterDocument = await meterModel.create(args)
             return newMeterDocument
          
         } catch (err) {
@@ -33,7 +33,7 @@ module.exports.meterRepository = () => {
 
     async function find() {
         try {
-            return await models().meterModel.find()
+            return await meterModel.find()
         } catch (error) {
            throw new CustomError(error.status, error.message) 
         }
@@ -58,7 +58,7 @@ module.exports.meterRepository = () => {
                     }
                 }
               ]
-               const meterDocuments = await models().meterModel.aggregate(pipArray)
+               const meterDocuments = await meterModel.aggregate(pipArray)
                return meterDocuments
         }catch(err){
               throw new CustomError(500, err.message)
@@ -67,7 +67,7 @@ module.exports.meterRepository = () => {
  
     async function findById(_id) {
         try {
-            return await models().meterModel.findById({_id})
+            return await meterModel.findById({_id})
         } catch (error) {
             throw new CustomError(500, err.message)
         }
@@ -75,7 +75,7 @@ module.exports.meterRepository = () => {
 
     async function findOne(id,query){
         try{
-            const meterDocuments = await models().meterModel.aggregate([
+            const meterDocuments = await meterModel.aggregate([
                 {
                     $match:{ _id: new mongoose.Types.ObjectId(id) }
                 },
@@ -120,7 +120,7 @@ module.exports.meterRepository = () => {
                 days_of_week: args.days_of_week,
                 hours_of_day: args.hours_of_day
             }
-            const meterDocuments = await models().meterModel.updateOne({
+            const meterDocuments = await meterModel.updateOne({
                 _id:id
             },meter_param)
              return meterDocuments
