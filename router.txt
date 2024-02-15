@@ -22,3 +22,13 @@
         error: ''
         data: data || null
     }
+
+/admin/list [GET]:
+    query: {
+        active || inactive
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }

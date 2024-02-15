@@ -4,16 +4,15 @@ module.exports.createAdminJoi =  Joi.object().keys({
    name: Joi.string(),
    login: Joi.string().required(),
    password: Joi.string().required(),
-   role: Joi.string().valid("admin", "super"),
+   role: Joi.string().valid("super"),
    open_page: Joi.array().required()
 }).required()
 
 module.exports.validatorUpdateAdmin = Joi.object().keys({
-   id: Joi.string().required(),
    name: Joi.string(),
    login: Joi.string(),
    password: Joi.string(),
-   role: Joi.string().valid("admin", "super"),
+   role: Joi.string().valid("super"),
    open_page: Joi.array(),
 }).required()
 

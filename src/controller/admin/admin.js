@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs")
 const { adminRepository } = require("../../repository/admin")
 
-module.exports.createAdmin = async (req, res) => {
+module.exports.createAdmin = async(req, res) => {
     try {
         const { name, login, password, role, open_page } = req.result
         
@@ -20,29 +20,19 @@ module.exports.createAdmin = async (req, res) => {
     }
 }
 
-module.exports.getAdminsListActiveFn = (db) => {
-    return async (event, args) => {
-        try {
-            const adminList = await adminRepository().findAll()
-            
-            return { status: 200, error: null, result: JSON.stringify(adminList.filter(e => e.active))}
-        } catch (err) {
-            console.log(err)
-            return { status: 500, error: err.message, result: null }
+module.exports.listActive = async(req, res) => {
+    try {
+        const { active } = req.query
+        console.log(active)
+        const adminList = await adminRepository().findAll()
+        if(active === 'inactive') {
+            res.status(200).json({ status: 200, error: null, data: adminList.filter(e => !e.active)})
+        } else {
+            res.status(200).json({ status: 200, error: null, data: adminList.filter(e => e.active)})
         }
-    }
-}
-
-module.exports.getAdminsListNoActiveFn = (db) => {
-    return async (event, args) => {
-        try {
-            const adminList = await adminRepository().findAll()
-            
-            return { status: 200, error: null, result: JSON.stringify(adminList.filter(e => !e.active))}
-        } catch (err) {
-            console.log(err)
-            return { status: 500, error: err.message, result: null }
-        }
+    } catch (err) {
+        console.log(err)
+        res.status(500).json({ status: 500, error: err.message, data: null })
     }
 }
 

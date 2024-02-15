@@ -9,7 +9,7 @@ const adminSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ["super", "admin"],
-        default: "admin"
+        default: "super"
     },
     active: {
         type: Boolean,
