@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const { meter_type_enum, connection_channel_enum, meter_form_enum, period_type_enum } = require("../../../validators/meter")
+const { meter_type_enum, connection_channel_enum, meter_form_enum, period_type_enum } = require("../../validation/meter")
 
 const meterSchema = new mongoose.Schema({
     name:{

@@ -1,0 +1,11 @@
+/login [POST]:
+    body {
+        username:
+        password:
+    }
+    res {
+        status: 401 || 200
+        error: ''
+        data: data || null
+    }
+

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const { channelFullIdNameList_enum, parameterShortNamesList_enum, status_enum, parameter_type_enum } = require("../../../validators/meter")
+const { channelFullIdNameList_enum, parameterShortNamesList_enum, status_enum, parameter_type_enum } = require("../../validation/meter")
 
 const parameterSchema = new mongoose.Schema({
     param_meter_type:{

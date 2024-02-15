@@ -10,18 +10,16 @@ const {journalModel} = require("./server_request/journal")
 const {billingModel} = require("./server_request/billing")
 const {previousModel} = require('./server_request/previous_data')
 
-module.exports.models = function(){
-    return Object.freeze({
-        meterModel,
-        parameterModel,
-        parameterValueModel,
-        adminModel,
-        electObjectModel,
-        calculationObjectModel,
-        folderModel,
-        uspdModel,
-        journalModel,
-        billingModel,
-        previousModel
-    })
-}
+module.exports = Object.freeze({
+    meterModel,
+    parameterModel,
+    parameterValueModel,
+    adminModel,
+    electObjectModel,
+    calculationObjectModel,
+    folderModel,
+    uspdModel,
+    journalModel,
+    billingModel,
+    previousModel
+})

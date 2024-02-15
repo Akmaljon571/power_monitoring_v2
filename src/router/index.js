@@ -1,4 +1,5 @@
 const { Router } = require("express");
+const { loginRouter } = require("./auth/login");
 
 module.exports.router = Router()
-    .get('/', (req, res) => {res.json('OK')})
+    .use('/', loginRouter)
