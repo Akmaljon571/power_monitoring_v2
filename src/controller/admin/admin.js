@@ -6,24 +6,23 @@ module.exports.createAdmin = async(req, res) => {
         const { name, login, password, role, open_page } = req.result
         
         const find = await adminRepository().findOne({ login: login })
-        if (find) return res.status(400).json({ status: 400, error: 'User login already exists', data: null });
+        if (find) res.status(400).json({ status: 400, error: 'User login already exists', data: null });
 
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(password, salt);
         const newObj = { name, login, role, open_page, password: hash }
 
         await adminRepository().insert(newObj)
-        return res.status(200).json({ status: 200, error: null, data: "Successful saved" });
+        res.status(200).json({ status: 200, error: null, data: "Successful saved" });
     } catch (err) {
         console.log(err)
-        return res.status(500).json({ status: 500, error: err.message, data: null });
+        res.status(500).json({ status: 500, error: err.message, data: null });
     }
 }
 
 module.exports.listActive = async(req, res) => {
     try {
         const { active } = req.query
-        console.log(active)
         const adminList = await adminRepository().findAll()
         if(active === 'inactive') {
             res.status(200).json({ status: 200, error: null, data: adminList.filter(e => !e.active)})
@@ -31,7 +30,6 @@ module.exports.listActive = async(req, res) => {
             res.status(200).json({ status: 200, error: null, data: adminList.filter(e => e.active)})
         }
     } catch (err) {
-        console.log(err)
         res.status(500).json({ status: 500, error: err.message, data: null })
     }
 }
@@ -41,10 +39,10 @@ module.exports.updateAdmin = async(req, res) => {
         const { id } = req.params
         const args = req.result
         const findId = await adminRepository().findById(id)
-        if (!findId) return res.status(404).json({ status: 404, error: "Admin Not Found", data: null })
+        if (!findId) res.status(404).json({ status: 404, error: "Admin Not Found", data: null })
 
         const findLogin = await adminRepository().findOne({ login: args.login })
-        if (findLogin && findLogin._id != id) return res.status(400).json({ status: 400, error: 'User login already use', data: null });
+        if (findLogin && findLogin._id != id) res.status(400).json({ status: 400, error: 'User login already use', data: null });
 
         let password
         if (args.password) {
@@ -58,39 +56,30 @@ module.exports.updateAdmin = async(req, res) => {
             role: args.role || findId.role,
             open_page: args.open_page || findId.open_page
         })
-        return res.status(200).json({ status: 200, error: null, data: 'Successful updated' })
+        res.status(200).json({ status: 200, error: null, data: 'Successful updated' })
     } catch (err) {
-        console.log(err)
-        return res.status(500).json({ status: 500, error: err.message, data: null })
+        res.status(500).json({ status: 500, error: err.message, data: null })
     }
 }
 
-module.exports.deleteAdminFn = () => {
-    return async (event, args) => {
-        try {
-            await validateDeleteAdmin(args)
-            if (!tokenCheck(args.token)) return { status: 401, error: 'Token invalid Or not Admin', result: null }
+module.exports.deleteAdmin = async(req, res) => {
+    try {
+        const { id } = req.params
 
-            await adminRepository().remove(args.id)
-            return { status: 204, error: null, result: 'Successful deleted' }
-        } catch (err) {
-            console.log(err)
-            return { status: 500, error: err.message, result: null }
-        }
+        await adminRepository().remove(id)
+        res.status(204).json({ status: 204, error: null, data: 'Successful deleted' })
+    } catch (err) {
+        res.status(500).json({ status: 500, error: err.message, data: null })
     }
 }
 
-module.exports.activeAdminFn = () => {
-    return async (event, args) =>{
-        try {
-            await validateDeleteAdmin(args)
-            if (!tokenCheck(args.token)) return { status: 401, error: 'Token invalid Or not Admin', result: null }
-
-            await adminRepository().active(args.id)
-            return { status: 200, error: null, result: 'Successful active' }
-        } catch (error) {
-            console.log(error)
-            return {status: 500, error: null, result: null}
-        }
+module.exports.activeAdmin = async(req, res) => {
+    try {
+        const { id } = req.params
+        
+        await adminRepository().active(id)
+        res.status(204).json({ status: 200, error: null, data: 'Successful activate' })
+    } catch (err) {
+        res.status(500).json({ status: 500, error: err.message, data: null })
     }
 }

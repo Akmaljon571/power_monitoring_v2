@@ -41,3 +41,23 @@
         error: ''
         data: data || null
     }   
+
+/admin/activate/:id [PUT]: 
+    headers {
+        authorization: 'admin token'
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/admin/remove/:id [DELETE]: 
+    headers {
+        authorization: 'admin token'
+    }
+    res {
+        status: 204
+        error: ''
+        data: data || null
+    }
