@@ -36,37 +36,32 @@ module.exports.listActive = async(req, res) => {
     }
 }
 
-module.exports.updateAdminFn = (db) => {
-    return async (event, args) => {
-        try {
-            await validatorUpdateAdmin(args)
-            if (!tokenCheck(args.token)) return { status: 401, error: 'Token invalid Or not Admin', result: null }
+module.exports.updateAdmin = async(req, res) => {
+    try {
+        const { id } = req.params
+        const args = req.result
+        const findId = await adminRepository().findById(id)
+        if (!findId) return res.status(404).json({ status: 404, error: "Admin Not Found", data: null })
 
-            const { id } = args
-            const findId = await adminRepository().findById(id)
-            if (!findId) return { status: 404, error: "Admin Not Found", result: null }
+        const findLogin = await adminRepository().findOne({ login: args.login })
+        if (findLogin && findLogin._id != id) return res.status(400).json({ status: 400, error: 'User login already use', data: null });
 
-            const findLogin = await adminRepository().findOne({ login: args.login })
-            if (findLogin && findLogin._id != id) return { status: 401, error: 'User login already use', result: null };
-
-            let password
-            if (args.password) {
-                const salt = await bcrypt.genSalt(10);
-                password = await bcrypt.hash(args.password, salt);
-            }
-
-            await adminRepository().update(args.id, {
-                name: args.name || findId.name,
-                login: args.login || findId.login,
-                password: password || findId.password,
-                role: args.role || findId.role,
-                open_page: args.open_page || findId.open_page
-            })
-            return { status: 200, error: null, result: 'Successful updated' }
-        } catch (err) {
-            console.log(err)
-            return { status: 500, error: err.message, result: null }
+        let password
+        if (args.password) {
+            const salt = await bcrypt.genSalt(10);
+            password = await bcrypt.hash(args.password, salt);
         }
+        await adminRepository().update(id, {
+            name: args.name || findId.name,
+            login: args.login || findId.login,
+            password: password || findId.password,
+            role: args.role || findId.role,
+            open_page: args.open_page || findId.open_page
+        })
+        return res.status(200).json({ status: 200, error: null, data: 'Successful updated' })
+    } catch (err) {
+        console.log(err)
+        return res.status(500).json({ status: 500, error: err.message, data: null })
     }
 }
 

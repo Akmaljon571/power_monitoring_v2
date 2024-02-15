@@ -1,14 +1,3 @@
-/login [POST]:
-    body {
-        username:
-        password:
-    }
-    res {
-        status: 401 || 200
-        error: ''
-        data: data || null
-    }
-
 /admin/create [POST]: 
     headers {
         authorization: 'admin token'
@@ -52,4 +41,3 @@
         error: ''
         data: data || null
     }   
-
