@@ -9,3 +9,16 @@
         data: data || null
     }
 
+/admin/create [POST]: 
+    headers {
+        authorization: 'admin token'
+    }
+    body {
+        username:
+        password:
+    }
+    res {
+        status: 403 || 400 || 200
+        error: ''
+        data: data || null
+    }

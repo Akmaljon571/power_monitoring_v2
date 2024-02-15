@@ -22,6 +22,9 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 app.use(router);
+app.use((err, req, res, next) => {
+    res.status(500).json({ status: 500, error: 'Something went wrong!', data: null });
+});
 
 socketIO(io);
 

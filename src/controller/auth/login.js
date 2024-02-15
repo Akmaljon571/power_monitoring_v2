@@ -5,7 +5,7 @@ const { repositories } = require("../../repository")
 module.exports.authorization = async (req, res) => {
     try {
         const { username, password } = req.body;
-        const TOKEN_KEY = process.env.TOKEN_KEY
+        const SECRET_KEY = process.env.SECRET_KEY
 
         if (!(username && password)) {
             return res.status(401).json({ status: 401, error: "Username and password is required"})
@@ -20,7 +20,7 @@ module.exports.authorization = async (req, res) => {
                     await repositories().adminRepository().update(user._id, {last_active: new Date()})
                     const token = jwt.sign(
                         { user: user._id, role: user.role },
-                        TOKEN_KEY,
+                        SECRET_KEY,
                         {
                             expiresIn: "10h",
                         }

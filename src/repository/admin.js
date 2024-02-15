@@ -34,7 +34,7 @@ module.exports.adminRepository = () => {
         return admins
     }
     async function insert(args) {
-        const admins = await adminModel.insertMany(args)
+        const admins = await adminModel.create(args)
         return admins
     }
     async function update(id, args) {
