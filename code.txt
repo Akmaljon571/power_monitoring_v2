@@ -1,0 +1,3 @@
+catch: 
+    const error = new CustomError(err.status, err.message)
+    res.status(error.status).json({ status: error.status, error: error.message, data: null })

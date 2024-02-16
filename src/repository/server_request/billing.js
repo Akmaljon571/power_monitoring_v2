@@ -29,7 +29,7 @@ module.exports.billingRepository = () => {
         }
     }
 
-    async function findList({ id, oneDate, twoDate }) {
+    async function findList(id, oneDate, twoDate) {
       try {
             const meters = [];
             const feeder = {}

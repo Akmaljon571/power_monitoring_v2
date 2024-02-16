@@ -1,5 +1,4 @@
 const Joi = require("joi")
-const CustomError = require("../utils/custom_error")
 
 const parameterShortNamesList = [
    "energyarchive_A+","energyarchive_A-","energyarchive_R+","energyarchive_R-",
