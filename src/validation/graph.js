@@ -9,11 +9,9 @@ module.exports.grahpData =  Joi.object().keys({
     date2: Joi.string()
 }).required()
 
-module.exports.validatorUpdateAdmin = Joi.object().keys({
-    type: Joi.string(),
-    limit: Joi.string(),
-    modelDate: Joi.string(),
+module.exports.graphArchive = Joi.object().keys({
     selectedParameters: Joi.string(),
+    limit: Joi.string(),
     date1: Joi.string(),
     date2: Joi.string()
 }).required()
