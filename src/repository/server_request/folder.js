@@ -82,7 +82,7 @@ module.exports.folderObjectRepository = () => {
     }
   }
 
-  async function findOne(id, query) {
+  async function findOne(id) {
     try {
       const pipArray = [
         {
@@ -143,7 +143,6 @@ module.exports.folderObjectRepository = () => {
       });
       if (folder[0].meter_detail) {
         folder[0].meter_detail.params = folder[0].meter_detail.params.filter(e => e.status == 'active')
-        console.log(folder[0].meter_detail)
       }
       return folder[0];
     } catch (err) {

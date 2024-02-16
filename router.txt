@@ -34,6 +34,9 @@
     }
 
 /admin/update/:id [PATCH]: 
+    params: {
+        id:
+    }
     body {
         name:
         login:
@@ -47,7 +50,10 @@
         data: data || null
     }   
 
-/admin/activate/:id [PUT]: 
+/admin/activate/:id [PUT]:
+    params: {
+        id:
+    } 
     res {
         status: 200
         error: ''
@@ -55,6 +61,9 @@
     }
 
 /admin/remove/:id [DELETE]: 
+    params: {
+        id:
+    }
     res {
         status: 204
         error: ''
@@ -108,9 +117,9 @@
         data: data || null
     }
 
-/meter/one [GET]:
+/meter/one/:id [GET]:
     params: {
-        id: ''
+        id:
     }
     res {
         status: 200
@@ -118,9 +127,9 @@
         data: data || null
     }
 
-/meter/update [PATCH]: 
+/meter/update/:id [PATCH]: 
     params: {
-        id: ''
+        id:
     }
     body {
         "connection_address":
@@ -174,15 +183,23 @@
 
 /folder/list [GET]:
     query {
-        limit: [number]
-    }          [optional]
+        limit: [number] & [optional]
+    }
     res {
         status: 200
         error: ''
         data: data || null
     }
 
-
+/folder/one/:id [GET]:
+    params: {
+        id:
+    }
+    res {
+        status: 200 | 404
+        error: ''
+        data: data || null
+    }
 
 
 

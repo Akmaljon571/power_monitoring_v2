@@ -1,7 +1,8 @@
 const CustomError = require("../../utils/custom_error")
 const { repositories } = require("../../repository")
 
-module.exports.getFoldersList = async(req, res) => {
+// getFoldersList
+module.exports.getListFolders = async(req, res) => {
     try {
         const query = req.query
         console.log(query)
@@ -14,18 +15,16 @@ module.exports.getFoldersList = async(req, res) => {
     }
 }
 
-module.exports.getSingleFolder = () => {
-    return async (event, args) => {
-        try {
-            let id = args.id
-            let query = args.query
-            const folderDocument = await repositories().folderObjectRepository().findOne(id, query)
-            if (!folderDocument) { return { status: 404 } }
-            
-            return { status: 200, result: JSON.stringify(folderDocument) }
-        } catch (err) {
-            return new CustomError(err.status, err.message)
-        }
+module.exports.getSingleFolder = async(req, res) => {
+    try {
+        const { id } = req.params
+        const folderDocument = await repositories().folderObjectRepository().findOne(id)
+
+        if (!folderDocument) { return res.status(404).json({ status: 404, error: "Folder not found", data: null }) }
+        res.status(200).json({ status: 200, error: null, data: folderDocument })
+    } catch (err) {
+        const error = new CustomError(err.status, err.message)
+        res.status(error.status).json({ status: error.status, error: error.message, data: null })
     }
 }
 

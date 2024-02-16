@@ -4,3 +4,10 @@ catch:
     
 200:
     res.status(200).json({ status: 200, error: null, data:  })
+
+Error:
+    res.status().json({ status: , error: "", data: null })
+
+201:
+    res.status(201).json({ status: 201, error: null, data: "Created" })
+    

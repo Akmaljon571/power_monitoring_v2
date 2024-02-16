@@ -45,9 +45,9 @@
         data: data || null
     }
 
-/meter/one [GET]:
+/meter/one/:id [GET]:
     params: {
-        id: ''
+        id:
     }
     res {
         status: 200
@@ -55,9 +55,9 @@
         data: data || null
     }
 
-/meter/update [PATCH]: 
+/meter/update/:id [PATCH]: 
     params: {
-        id: ''
+        id:
     }
     body {
         "connection_address":

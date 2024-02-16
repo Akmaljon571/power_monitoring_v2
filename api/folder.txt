@@ -8,9 +8,16 @@
         data: data || null
     }
 
+/folder/one/:id [GET]:
+    params: {
+        id:
+    }
+    res {
+        status: 200 | 404
+        error: ''
+        data: data || null
+    }
 
 
 
 
-
-    
