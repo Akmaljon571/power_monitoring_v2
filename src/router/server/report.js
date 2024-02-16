@@ -5,4 +5,4 @@ const { billingGetJoi } = require("../../validation/billing");
 const { getFirstTemplateReport } = require("../../controller/server/report");
 
 module.exports.reportRouter = Router()
-    .get('/', adminToken_superToken, validateQuery(billingGetJoi), getFirstTemplateReport)
+    .get('/:id', adminToken_superToken, validateQuery(billingGetJoi), getFirstTemplateReport)

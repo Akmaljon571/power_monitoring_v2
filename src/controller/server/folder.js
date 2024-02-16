@@ -5,7 +5,6 @@ const { repositories } = require("../../repository")
 module.exports.getListFolders = async(req, res) => {
     try {
         const query = req.query
-        console.log(query)
         const folderDocuments = await repositories().folderObjectRepository().findAll(query)
 
         res.status(200).json({ status: 200, error: null, data: folderDocuments })

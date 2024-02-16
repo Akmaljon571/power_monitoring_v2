@@ -5,4 +5,4 @@ const { validateQuery } = require("../../middleware/validateQuery");
 const { billingGetJoi } = require("../../validation/billing");
 
 module.exports.billingRouter = Router()
-    .get('/', adminToken_superToken, validateQuery(billingGetJoi), getListBilling)
+    .get('/:id', adminToken_superToken, validateQuery(billingGetJoi), getListBilling)

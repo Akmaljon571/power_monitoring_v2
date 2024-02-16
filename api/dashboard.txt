@@ -1,0 +1,48 @@
+/dashboard/data/:id [GET]:
+    query {
+        childObjects:        
+        getParameters:
+        selectedParameters:
+        year:
+        month:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/dashboard/real-time/:id [GET]:
+    query {
+        year:
+        month:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/dashboard/caltulation/:id [GET]:
+    query {
+        childObjects:
+        getParameters:
+        selectedParameters:
+        year:
+        month:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/dashboard/realtime-caltulation/:id [GET]:
+    query {
+        param_list:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
