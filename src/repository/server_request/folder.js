@@ -18,7 +18,7 @@ module.exports.folderObjectRepository = () => {
 
   async function findAll(query) {
     try {
-      const limit = query && query.limit ? query.limit : 150;
+      const limit = query && query.limit ? Number(query.limit) : 150;
 
       const pipArray = [
         {

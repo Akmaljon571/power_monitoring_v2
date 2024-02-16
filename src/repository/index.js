@@ -3,7 +3,6 @@ const {parameterValueRepository} = require("./server_request/parameter_value")
 const {parameterRepository} = require("./server_request/parameter")
 const {adminRepository} = require("./admin")
 const {electObjectRepository} = require("./objects/elect_object")
-const {factoryObjectRepository} = require("./server_request/factory")
 const {calculationObjectRepository} = require("./objects/calculation_object")
 const {folderObjectRepository}  = require("./server_request/folder")
 const {uspdObjectRepository} = require("./server_request/uspd")
@@ -18,7 +17,6 @@ module.exports.repositories = function(){
         parameterValueRepository,
         adminRepository,
         electObjectRepository,
-        factoryObjectRepository,
         calculationObjectRepository,
         folderObjectRepository,
         uspdObjectRepository,

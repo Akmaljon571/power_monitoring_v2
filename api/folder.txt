@@ -1,0 +1,16 @@
+/folder/list [GET]:
+    query {
+        limit: [number]
+    }          [optional]
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+
+
+
+
+
+    
