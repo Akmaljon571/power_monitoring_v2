@@ -10,7 +10,7 @@
         role:
     }
     res {
-        status: 403 || 400 || 200
+        status: 403 || 400 || 201
         error: ''
         data: data || null
     }
@@ -18,6 +18,9 @@
 /admin/list [GET]:
     query: {
         active || inactive
+    }
+    headers {
+        authorization: 'admin or super token'
     }
     res {
         status: 200

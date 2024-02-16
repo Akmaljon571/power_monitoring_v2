@@ -20,11 +20,12 @@ module.exports.authorization = async (req, res) => {
                     await repositories().adminRepository().update(user._id, {last_active: new Date()})
                     const token = jwt.sign(
                         { user: user._id, role: user.role },
-                        SECRET_KEY,
-                        {
-                            expiresIn: "10h",
-                        }
+                        SECRET_KEY
+                        // {
+                        //     expiresIn: "10h",
+                        // }
                     );
+                    console.log(token)
                     res.cookie('token', token);
                     res.status(200).json({ status: 200, data: user, error: null })
                 }

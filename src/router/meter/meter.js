@@ -1,7 +1,9 @@
 const { Router } = require("express");
-const { createMeter } = require("../../controller/meter/meter");
+const { createMeter, getListMeter } = require("../../controller/meter/meter");
 const { validate } = require("../../middleware/validate");
 const { createMeterJoi } = require("../../validation/meter");
+const { adminToken_superToken } = require("../../middleware/admin_or_super_token");
 
 module.exports.meterRouter = Router()
-    .post('/create', validate(createMeterJoi), createMeter)
+    .get('/list', adminToken_superToken, getListMeter)
+    .post('/create', adminToken_superToken, validate(createMeterJoi), createMeter)

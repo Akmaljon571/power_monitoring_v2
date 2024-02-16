@@ -76,14 +76,12 @@ module.exports.createMeter = async(req, res) => {
     }
 }
 
-module.exports.getListOfMetersFunction = () => {
-    return async (event, args) => {
-        try {
-            const meterList = await repositories().meterRepository().findAll({})
-            return { status: 200, args: JSON.stringify(meterList) }
-        } catch (err) {
-            return new CustomError(err.status, err.message)
-        }
+module.exports.getListMeter = async(req, res) => {
+    try {
+        const meterList = await repositories().meterRepository().findAll({})
+        res.status(200).json({ status: 200, error: null, data: meterList })
+    } catch (err) {
+        res.status(500).json({ status: 500, error: err.message, data: null })
     }
 }
 

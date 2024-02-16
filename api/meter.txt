@@ -40,3 +40,38 @@
         error: ''
         data: data || null
     }
+
+/meter/list [GET]:
+    headers {
+        authorization: 'admin or super token'
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
