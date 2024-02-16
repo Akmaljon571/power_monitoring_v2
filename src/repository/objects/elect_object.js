@@ -27,7 +27,7 @@ module.exports.electObjectRepository = () => {
 
     async function countDocuments(args) {
         try {
-            return await models().electObjectModel.countDocuments(args)
+            return await electObjectModel.countDocuments(args)
         } catch (err) {
             throw new CustomError(500, err.message)
         }
@@ -35,8 +35,8 @@ module.exports.electObjectRepository = () => {
 
     async function listUse() {
         try {
-            const list = await models().electObjectModel.find({ meter_id: { $exists: true }})
-            const meters = await models().folderModel.find()
+            const list = await electObjectModel.find({ meter_id: { $exists: true }})
+            const meters = await folderModel.find()
             const result = []
             let ids = []
             for (let i = 0; i < meters.length; i++) {
@@ -54,7 +54,7 @@ module.exports.electObjectRepository = () => {
 
     async function insert(args) {
         try {
-            const objectDocuments = await models().electObjectModel.create(args)
+            const objectDocuments = await electObjectModel.create(args)
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -63,7 +63,7 @@ module.exports.electObjectRepository = () => {
 
     async function update(_id, query) {
         try {
-            const objectDocuments = await models().electObjectModel.updateOne({ _id }, { $set: query})
+            const objectDocuments = await electObjectModel.updateOne({ _id }, { $set: query})
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -72,7 +72,7 @@ module.exports.electObjectRepository = () => {
 
     async function findById(id) {
         try {
-            const objectDocuments = await models().electObjectModel.findById(id)
+            const objectDocuments = await electObjectModel.findById(id)
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -81,7 +81,7 @@ module.exports.electObjectRepository = () => {
 
     async function findParentMeter(id) {
         try {
-            const getMeter = await models().electObjectModel.findOne({ parent_object: id })
+            const getMeter = await electObjectModel.findOne({ parent_object: id })
             return getMeter
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -90,7 +90,7 @@ module.exports.electObjectRepository = () => {
 
     async function insertParentParams(id, paramerts_list) {
         try {
-            await models().electObjectModel.updateOne({ _id: id }, { $set: { parameters: paramerts_list } })
+            await electObjectModel.updateOne({ _id: id }, { $set: { parameters: paramerts_list } })
             return 'ok'
         } catch (error) {
             throw new CustomError(500, err.message)
@@ -99,12 +99,12 @@ module.exports.electObjectRepository = () => {
 
     async function remove(id) {
         try {
-            const find = await models().electObjectModel.findOne({ parent_object: id }, )
+            const find = await electObjectModel.findOne({ parent_object: id }, )
             if(find) {
-                await models().electObjectModel.deleteOne({ _id: id })
+                await electObjectModel.deleteOne({ _id: id })
                 remove(find._id)
             }
-            await models().electObjectModel.deleteOne({ _id: id })
+            await electObjectModel.deleteOne({ _id: id })
             return 'ok'
         } catch (error) {
             throw new CustomError(404, "ElectObject Not Found")
@@ -113,7 +113,7 @@ module.exports.electObjectRepository = () => {
 
     async function findMeter(id) {
         try {
-            const objectDocuments = await models().electObjectModel.findOne({ meter_id: id })
+            const objectDocuments = await electObjectModel.findOne({ meter_id: id })
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -176,7 +176,7 @@ module.exports.electObjectRepository = () => {
                     }
                 })
             }
-            return await models().electObjectModel.aggregate(pipArray)
+            return await electObjectModel.aggregate(pipArray)
 
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -329,7 +329,7 @@ module.exports.electObjectRepository = () => {
                     }
                 )
             }
-            const electObjectDocument = await models().electObjectModel.aggregate(pipArray)
+            const electObjectDocument = await electObjectModel.aggregate(pipArray)
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -475,7 +475,7 @@ module.exports.electObjectRepository = () => {
                 }
             ]
 
-            const electObjectDocument = await models().electObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
+            const electObjectDocument = await electObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -599,7 +599,7 @@ module.exports.electObjectRepository = () => {
                 }
             ]
 
-            const electObjectDocument = await models().electObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
+            const electObjectDocument = await electObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -724,7 +724,7 @@ module.exports.electObjectRepository = () => {
                 }
             ]
 
-            const electObjectDocument = await models().electObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
+            const electObjectDocument = await electObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -853,7 +853,7 @@ module.exports.electObjectRepository = () => {
                 }
             ];
 
-            const electObjectDocument = await models().electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
+            const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -1019,7 +1019,7 @@ module.exports.electObjectRepository = () => {
                 }
             ]
 
-            const electObjectDocument = await models().electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
+            const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -1130,7 +1130,7 @@ module.exports.electObjectRepository = () => {
                     }
                 }
             ]
-            const realtimeDocuments = await models().electObjectModel.aggregate(electObjectPipelines)
+            const realtimeDocuments = await electObjectModel.aggregate(electObjectPipelines)
             let result = {active_power_total: 0, reactive_power_total: 0, full_power_total: 0, coef_active_total: 0}
             realtimeDocuments[0].parameters.map(e => {
                 if(active.includes(e.param_details.param_short_name)){
@@ -1162,31 +1162,7 @@ module.exports.electObjectRepository = () => {
                             $gte: new Date(startDate),
                              $lt: new Date(finishDate) },
                     },
-                },
-                // {
-                //     $addFields: {
-                //         day: { $dayOfMonth: "$date" },
-                //         month: { $month: "$date" },
-                //         year: { $year: "$date" }
-                //     }
-                // },
-                // {
-                //     $group: {
-                //         _id: {
-                //             day: "$day",
-                //             month: "$month",
-                //             year: "$year"
-                //         },
-                //         // first_value: {
-                //         //     $cond: {
-                //         //         if: { $gt: ["$enddate", new Date()] },
-                //         //         then: {
-                //         //             $sum: "$value"
-                //         //         }
-                //         //     }
-                //         // }
-                //     }
-                // }
+                }
             ]
              
              const electObjectPipelines = [
@@ -1275,7 +1251,7 @@ module.exports.electObjectRepository = () => {
                 }
              ]
 
-             const electObjectDocument = await models().electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
+             const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
              return electObjectDocument[0]
       
         } catch (err) {

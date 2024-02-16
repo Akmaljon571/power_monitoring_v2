@@ -7,6 +7,7 @@ const { billingRouter } = require("./server/billing");
 const { folderRouter } = require("./server/folder");
 const { journalRouter } = require("./server/journal");
 const { uspdRouter } = require("./server/uspd");
+const { reportRouter } = require("./server/report");
 
 module.exports.router = Router()
     .use('/', loginRouter)
@@ -16,4 +17,5 @@ module.exports.router = Router()
     .use('/folder', folderRouter)
     .use('/journal', journalRouter)
     .use('/uspd', uspdRouter)
+    .use('/report', reportRouter)
     .use('/*', notFound)

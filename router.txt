@@ -277,6 +277,16 @@
         data: data || null
     }
 
+/report [GET]:
+    query {
+        date1:
+        date2:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
 
 
 

@@ -7,3 +7,5 @@ app.js ichida shu kodni qoshib qoyish {
     credentials: true,
     origin: 'http://localhost:5500'
 }
+
+login ni erte tekshiramiz
