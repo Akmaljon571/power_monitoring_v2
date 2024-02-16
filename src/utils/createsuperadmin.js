@@ -1,9 +1,8 @@
-import readline from 'readline'
-import dotenv from 'dotenv'
-import mongoose from 'mongoose';
-import Auth from '../model/auth.js';
-import { createHash } from './bcrypt.js';
-dotenv.config()
+const readline = require('readline')
+const mongoose = require('mongoose')
+const { adminModel } = require('../models/admin')
+const bcrypt = require('bcryptjs')
+require('dotenv').config()
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -16,8 +15,8 @@ mongoose.connect(process.env.DB, {
 });
 
 const getUserInputStep1 = async () => {
-    const allAdmin = await Auth.find()
-    const find = allAdmin.find(e => e.status == 'superAdmin')
+    const allAdmin = await adminModel.find()
+    const find = allAdmin.find(e => e.role == 'admin')
     if (!find) {
         rl.question('Step 1: Please enter Username: ', async (username) => {
             await getUserInputStep2(username);
@@ -31,10 +30,12 @@ const getUserInputStep1 = async () => {
 
 const getUserInputStep2 = async (username) => {
     rl.question('Step 2: Please enter password: ', async (password) => {
-        await Auth.create({
-            auth_login: username,
-            auth_password: await createHash(password),
-            status: 'superAdmin'
+        const salt = await bcrypt.genSalt(10);
+        await adminModel.create({
+            name: "Admin",
+            login: username,
+            password: await bcrypt.hash(password, salt),
+            role: 'admin'
         })
         console.log('Create Super User...')
         rl.close();

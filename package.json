@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon ./src/app.js"
+    "dev": "nodemon ./src/app.js",
+    "start": "nodemon ./src/app.js",
+    "createsuperadmin": "node ./src/utils/createsuperadmin.js"
   },
   "keywords": [],
   "author": "",
