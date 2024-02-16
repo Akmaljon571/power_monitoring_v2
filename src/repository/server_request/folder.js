@@ -8,6 +8,7 @@ module.exports.folderObjectRepository = () => {
     findAll,
     findOne,
     updateOne,
+    updateUSPD
   });
 
   async function insert(args) {
@@ -154,6 +155,17 @@ module.exports.folderObjectRepository = () => {
     try {
       const folderDocument = await folderModel.updateOne({
         parent_id: new mongoose.Types.ObjectId(id)
+      }, data);
+      return folderDocument;
+    } catch (err) {
+      throw new CustomError(500, err.message)
+    }
+  }
+
+  async function updateUSPD(id, data) {
+    try {
+      const folderDocument = await folderModel.updateOne({
+        uspd: new mongoose.Types.ObjectId(id)
       }, data);
       return folderDocument;
     } catch (err) {

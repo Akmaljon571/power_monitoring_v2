@@ -1,4 +1,5 @@
 const mongoose = require("mongoose")
+const { connection_channel_enum } = require("../../validation/uspd")
 const uspdSchema = new mongoose.Schema({
     name:{
         type:String
@@ -11,7 +12,7 @@ const uspdSchema = new mongoose.Schema({
     },
     connection_channel:{
         type:String,
-        enum:["245","246","247","248"]
+        enum: connection_channel_enum
     },
     number_uspd:{
         type:String

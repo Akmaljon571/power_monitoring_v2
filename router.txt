@@ -72,36 +72,36 @@
 
 /meter/create [POST]: 
     body {
-        "connection_address":
-        "connection_channel":
-        "id":
-        "ip_address":
-        "meter_form":
-        "meter_type":
-        "name":
-        "number_meter":
-        "password":
-        "port":
-        "waiting_time":
-        "interval_time":
-        "pause_time":
-        "package_size":
-        "time_difference":
-        "days_of_month":
-        "period_type":
-        "data_polling_length":
-        "data_refresh_length":
-        "hours_of_day": [{
-            "hour":
-            "minutes": 
+        connection_address:
+        connection_channel:
+        id:
+        ip_address:
+        meter_form:
+        meter_type:
+        name:
+        number_meter:
+        password:
+        port:
+        waiting_time:
+        interval_time:
+        pause_time:
+        package_size:
+        time_difference:
+        days_of_month:
+        period_type:
+        data_polling_length:
+        data_refresh_length:
+        hours_of_day: [{
+            hour:
+            minutes: 
         }],
-        "parameters": [{
-            "channel_full_id":
-            "param_name":
-            "param_short_name":
-            "parameter_type":
-            "status":
-            "text":
+        parameters: [{
+            channel_full_id:
+            param_name:
+            param_short_name:
+            parameter_type:
+            status:
+            text:
         }] 
     }
     res {
@@ -132,36 +132,36 @@
         id:
     }
     body {
-        "connection_address":
-        "connection_channel":
-        "id":
-        "ip_address":
-        "meter_form":
-        "meter_type":
-        "name":
-        "number_meter":
-        "password":
-        "port":
-        "waiting_time":
-        "interval_time":
-        "pause_time":
-        "package_size":
-        "time_difference":
-        "days_of_month":
-        "period_type":
-        "data_polling_length":
-        "data_refresh_length":
-        "hours_of_day": [{
-            "hour":
-            "minutes": 
+        connection_address:
+        connection_channel:
+        id:
+        ip_address:
+        meter_form:
+        meter_type:
+        name:
+        number_meter:
+        password:
+        port:
+        waiting_time:
+        interval_time:
+        pause_time:
+        package_size:
+        time_difference:
+        days_of_month:
+        period_type:
+        data_polling_length:
+        data_refresh_length:
+        hours_of_day: [{
+            hour:
+            minutes: 
         }],
-        "parameters": [{
-            "channel_full_id":
-            "param_name":
-            "param_short_name":
-            "parameter_type":
-            "status":
-            "text":
+        parameters: [{
+            channel_full_id:
+            param_name:
+            param_short_name:
+            parameter_type:
+            status:
+            text:
         }] 
     }
     res {
@@ -203,8 +203,8 @@
 
 /folder/create [POST]: 
     body {
-        "name":
-        "parent_id":
+        name:
+        parent_id:
     }
     res {
         status: 403 || 400 || 201
@@ -242,9 +242,40 @@
         data: data || null
     }
 
+/uspd/create [POST]: 
+    body {
+        name:
+        port:
+        ipAddress:
+        timeDifference:
+        login:
+        password:
+        connection_channel:
+    }
+    res {
+        status: 403 || 400 || 201
+        error: ''
+        data: data || null
+    }
 
-
-
+/uspd/update/:id [PATCH]: 
+    params: {
+        id:
+    }
+    body {
+        name:
+        port:
+        ipAddress:
+        timeDifference:
+        login:
+        password:
+        connection_channel:
+    }
+    res {
+        status: 403 || 400 || 201
+        error: ''
+        data: data || null
+    }
 
 
 

@@ -1,0 +1,34 @@
+/uspd/create [POST]: 
+    body {
+        name:
+        port:
+        ipAddress:
+        timeDifference:
+        login:
+        password:
+        connection_channel:
+    }
+    res {
+        status: 403 || 400 || 201
+        error: ''
+        data: data || null
+    }
+
+/uspd/update/:id [PATCH]: 
+    params: {
+        id:
+    }
+    body {
+        name:
+        port:
+        ipAddress:
+        timeDifference:
+        login:
+        password:
+        connection_channel:
+    }
+    res {
+        status: 403 || 400 || 201
+        error: ''
+        data: data || null
+    }
