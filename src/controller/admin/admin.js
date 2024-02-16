@@ -15,7 +15,6 @@ module.exports.createAdmin = async(req, res) => {
         await adminRepository().insert(newObj)
         res.status(200).json({ status: 200, error: null, data: "Successful saved" });
     } catch (err) {
-        console.log(err)
         res.status(500).json({ status: 500, error: err.message, data: null });
     }
 }

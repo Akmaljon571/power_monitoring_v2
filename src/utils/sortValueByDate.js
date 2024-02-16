@@ -44,9 +44,8 @@ module.exports.sortvalueObjectsForVectorDiagram = async (parameters, query) => {
         }
 
         return result
-
     } catch (err) {
-        console.log(err)
+        throw new CustomError(err.status, err.message)
     }
 }
 
@@ -96,7 +95,7 @@ module.exports.sortvalueObjectsForGraphObjectCurrent = async (parameters, type='
 
         return currentResult
     } catch (err) {
-        console.log(err)
+        throw new CustomError(err.status, err.message)
     }
 }
 
@@ -148,8 +147,7 @@ module.exports.sortvalueObjectsForGraphObjectArchive = async (parameters, type='
         return archiveResult
 
     } catch (err) {
-        console.log(err)
-
+        throw new CustomError(err.status, err.message)
     }
 }
 
@@ -235,7 +233,7 @@ module.exports.sortvalueObjectsForList = async (parameters, type) => {
         }
         return result
     } catch (err) {
-        console.log(err)
+        throw new CustomError(err.status, err.message)
     }
 }
 
@@ -291,7 +289,7 @@ module.exports.sortvalueObjectsForFirstReport =  (parameters, tariffs) => {
 
          return result
     } catch (err) {
-        console.log(err)
+        throw new CustomError(err.status, err.message)
     }
 }
 

@@ -362,7 +362,6 @@ module.exports.calculationObjectRepository = () => {
             ]
 
             const electObjectDocument = await calculationObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
-             console.log(electObjectDocument,"electObjectDocument")
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -620,7 +619,6 @@ module.exports.calculationObjectRepository = () => {
             ]
 
             const electObjectDocument = await calculationObjectModel.aggregate(pipArray, { maxTimeMS: 50000 })
-            console.log(electObjectDocument[0])
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)

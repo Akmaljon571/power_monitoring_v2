@@ -6,7 +6,6 @@ module.exports.authorization = async (req, res) => {
     try {
         const { username, password } = req.body;
         const SECRET_KEY = process.env.SECRET_KEY
-        console.log(req.headers)
         
         if (!(username && password)) {
             return res.status(401).json({ status: 401, error: "Username and password is required"})
@@ -37,7 +36,6 @@ module.exports.authorization = async (req, res) => {
             res.status(401).json({ status: 401, error: "user is not exist with this id", data: null });
         }
     } catch (err) {
-        console.log(err);
         res.status(401).json({ status: 401, error: err.message, data: null });
     }
 }

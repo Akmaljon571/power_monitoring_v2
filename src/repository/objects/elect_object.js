@@ -734,7 +734,6 @@ module.exports.electObjectRepository = () => {
             if (query.type === "current") {
                 modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
             }
-            console.log(modelname)
             const limit = query.limit ? query.limit : 150
             let subPipArray = [
                 {

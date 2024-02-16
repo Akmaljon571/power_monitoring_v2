@@ -110,8 +110,8 @@ module.exports.parameterValueRepository = () => {
                 }
             }
             return obj
-        } catch (error) {
-            console.log(error)
+        } catch (err) {
+            throw new CustomError(500, err.message)
         }
     }
 }
