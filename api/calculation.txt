@@ -1,0 +1,69 @@
+/calculation/create [POST]: 
+    body {
+        name:
+        type:
+        parent_object:
+    }
+    res {
+        status: 403 || 400 || 201
+        error: ''
+        data: data || null
+    }
+
+/calculation/single/:id [GET]:
+    params: {
+        id:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/calculation/list [GET]:
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/calculation/update/:id [PUT]: 
+    params: {
+        id:
+    }
+    body {
+        name:
+    }
+    res {
+        status: 403 || 400 || 200
+        error: ''
+        data: data || null
+    }
+
+/calculation/attach-params/:id [PATCH]: 
+    params: {
+        id:
+    }
+    body {
+        parameters: [
+            { 
+                parameter_id: 
+                sign: 
+            }
+        ]
+    }
+    res {
+        status: 403 || 400 || 200
+        error: ''
+        data: data || null
+    }
+
+/calculation/delete/:id [DELETE]: 
+    params: {
+        id:
+    }
+    res {
+        status: 403 || 400 || 204
+        error: ''
+        data: data || null
+    }

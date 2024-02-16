@@ -11,6 +11,7 @@ const { reportRouter } = require("./server/report");
 const { dashboardRouter } = require("./graphics/dashboard");
 const { graphRouter } = require("./graphics/graph");
 const { vectorRouter } = require("./graphics/vector");
+const { calculationRouter } = require("./electricity/calculation_object");
 
 module.exports.router = Router()
     .use('/', loginRouter)
@@ -23,5 +24,6 @@ module.exports.router = Router()
     .use('/uspd', uspdRouter)
     .use('/vector', vectorRouter)
     .use('/report', reportRouter)
+    .use('/calculation', calculationRouter)
     .use('/dashboard', dashboardRouter)
     .use('/*', notFound)

@@ -8,7 +8,6 @@ module.exports.calculationObjectRepository = () => {
         findById,
         findMeter,
         remove,
-        listUse,
         update,
         findParentMeter,
         countDocuments,
@@ -34,16 +33,6 @@ module.exports.calculationObjectRepository = () => {
         try {
             const objectDocuments = await calculationObjectModel.create(args)
             return objectDocuments
-        } catch (err) {
-            throw new CustomError(500, err.message)
-        }
-    }
-
-    async function listUse() {
-        try {
-            const list = await calculationObjectModel.find()
-            const meters = await meterModel.find()
-            return meters.map(e => list.find(w => w.meter_id == e._id) ? '' : {id: String(e._id), name: e.name}).filter(e => e)
         } catch (err) {
             throw new CustomError(500, err.message)
         }
@@ -162,7 +151,7 @@ module.exports.calculationObjectRepository = () => {
         }
     }
 
-    async function findOne(id, query) {
+    async function findOne(id) {
         try {
             const pipArray = [
                 {
