@@ -28,25 +28,16 @@ module.exports.getSingleFolder = async(req, res) => {
     }
 }
 
-module.exports.insertFolderRequest = () => {
-    return async (event, args) => {
-        try {
-            console.log(args)
-            let parameters = { name: args.name, folder_type: "folder", parent_id: args.parent_id ? args.parent_id : null }
-            let folderDocument = await repositories().folderObjectRepository().insert(parameters)
-            return { status: 200, result: JSON.stringify(folderDocument) }
-        } catch (err) {
-            return new CustomError(err.status, err.message)
-        }
-    }
-}
+// insertFolderRequest
+module.exports.createFolder = async (req, res) => {
+    try {
+        const { name, parent_id } = req.result
+        let parameters = { name: name, folder_type: "folder", parent_id: parent_id ? parent_id : null }
+        await repositories().folderObjectRepository().insert(parameters)
 
-module.exports.putEditFolderRequest = () => {
-    return async (event, args) => {
-        try {
-
-        } catch (err) {
-            return new CustomError(err.status, err.message)
-        }
+        res.status(201).json({ status: 201, error: null, data: "Successful Created" })
+    } catch (err) {
+        const error = new CustomError(err.status, err.message)
+        res.status(error.status).json({ status: error.status, error: error.message, data: null })
     }
 }

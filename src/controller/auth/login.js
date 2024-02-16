@@ -25,7 +25,6 @@ module.exports.authorization = async (req, res) => {
                         //     expiresIn: "10h",
                         // }
                     );
-                    console.log(token)
                     res.cookie('token', token);
                     res.status(200).json({ status: 200, data: user, error: null })
                 }

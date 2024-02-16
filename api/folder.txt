@@ -18,6 +18,13 @@
         data: data || null
     }
 
-
-
-
+/folder/create [POST]: 
+    body {
+        "name":
+        "parent_id":
+    }
+    res {
+        status: 403 || 400 || 201
+        error: ''
+        data: data || null
+    }
