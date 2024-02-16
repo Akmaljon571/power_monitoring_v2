@@ -5,6 +5,7 @@ const { meterRouter } = require("./meter/meter");
 const { notFound } = require("../controller");
 const { billingRouter } = require("./server/billing");
 const { folderRouter } = require("./server/folder");
+const { journalRouter } = require("./server/journal");
 
 module.exports.router = Router()
     .use('/', loginRouter)
@@ -12,4 +13,5 @@ module.exports.router = Router()
     .use('/meter', meterRouter)
     .use('/billing', billingRouter)
     .use('/folder', folderRouter)
+    .use('/journal', journalRouter)
     .use('/*', notFound)

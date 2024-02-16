@@ -1,0 +1,19 @@
+/journal/last-inserted/:meter_id [GET]:
+    params: {
+        meter_id:
+    }
+    res {
+        status: 200 | 404
+        error: ''
+        data: data || null
+    }
+
+
+
+
+
+
+
+
+
+

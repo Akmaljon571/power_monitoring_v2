@@ -11,3 +11,6 @@ Error:
 201:
     res.status(201).json({ status: 201, error: null, data: "Successful Created" })
     
+
+const CustomError = require("../../utils/custom_error")
+const { repositories } = require("../../repository")
