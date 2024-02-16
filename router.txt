@@ -129,6 +129,18 @@
         data: data || null
     }
 
+/meter/one [GET]:
+    params: {
+        id: ''
+    }
+    headers {
+        authorization: 'admin or super token'
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
 
 
 

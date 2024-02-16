@@ -1,6 +1,7 @@
 const { repositories } = require("../../repository/index")
 const CustomError = require("../../utils/custom_error")
 
+// createMeterFunction
 module.exports.createMeter = async(req, res) => {
     try {
         const args = req.result
@@ -76,6 +77,7 @@ module.exports.createMeter = async(req, res) => {
     }
 }
 
+// getListOfMetersFunction
 module.exports.getListMeter = async(req, res) => {
     try {
         const meterList = await repositories().meterRepository().findAll({})
@@ -85,14 +87,14 @@ module.exports.getListMeter = async(req, res) => {
     }
 }
 
-module.exports.getSingleMeterFunction = () => {
-    return async (event, args) => {
-        try {
-            const meterDocument = await repositories().meterRepository().findOne(args.id, args.query)
-            return { status: 200, args: JSON.stringify(meterDocument) }
-        } catch (err) {
-            return new CustomError(err.status, err.message)
-        }
+// getSingleMeterFunction
+module.exports.getOneMeter = async(req, res) => {
+    try {
+        const { id } = req.params
+        const meterDocument = await repositories().meterRepository().findOne(id)
+        res.status(200).json({ status: 200, error: null, data: meterDocument })
+    } catch (err) {
+        res.status(500).json({ status: 500, error: err.message, data: null })
     }
 }
 

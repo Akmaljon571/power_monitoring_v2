@@ -73,7 +73,7 @@ module.exports.meterRepository = () => {
         }
     }
 
-    async function findOne(id,query){
+    async function findOne(id){
         try{
             const meterDocuments = await meterModel.aggregate([
                 {
