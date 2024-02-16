@@ -337,6 +337,35 @@
         data: data || null
     }
 
+/graph/data/:id [GET]:
+    query {
+        type:
+        limit:
+        modelDate:
+        selectedParameters:
+        date1:
+        date2:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/graph/data-caltulation/:id [GET]:
+    query {
+        type:
+        limit:
+        modelDate:
+        selectedParameters:
+        date1:
+        date2:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
 
 
 
