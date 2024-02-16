@@ -15,3 +15,12 @@ module.exports.graphArchive = Joi.object().keys({
     date1: Joi.string(),
     date2: Joi.string()
 }).required()
+
+module.exports.vector = Joi.object().keys({
+    selectedParameters: Joi.string(),
+    limit: Joi.string(),
+    date1: Joi.string(),
+    date2: Joi.string(),
+    modelname: Joi.string(),
+    paramDate: Joi.string()
+}).required()

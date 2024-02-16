@@ -23,7 +23,7 @@
         data: data || null
     }
 
-/dashboard/caltulation/:id [GET]:
+/dashboard/calculation/:id [GET]:
     query {
         childObjects:
         getParameters:
@@ -37,7 +37,7 @@
         data: data || null
     }
 
-/dashboard/realtime-caltulation/:id [GET]:
+/dashboard/realtime-calculation/:id [GET]:
     query {
         param_list:
     }

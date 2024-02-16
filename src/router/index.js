@@ -10,6 +10,7 @@ const { uspdRouter } = require("./server/uspd");
 const { reportRouter } = require("./server/report");
 const { dashboardRouter } = require("./graphics/dashboard");
 const { graphRouter } = require("./graphics/graph");
+const { vectorRouter } = require("./graphics/vector");
 
 module.exports.router = Router()
     .use('/', loginRouter)
@@ -20,6 +21,7 @@ module.exports.router = Router()
     .use('/journal', journalRouter)
     .use('/graph', graphRouter)
     .use('/uspd', uspdRouter)
+    .use('/vector', vectorRouter)
     .use('/report', reportRouter)
     .use('/dashboard', dashboardRouter)
     .use('/*', notFound)

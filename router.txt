@@ -313,7 +313,7 @@
         data: data || null
     }
 
-/dashboard/caltulation/:id [GET]:
+/dashboard/calculation/:id [GET]:
     query {
         childObjects:
         getParameters:
@@ -327,7 +327,7 @@
         data: data || null
     }
 
-/dashboard/realtime-caltulation/:id [GET]:
+/dashboard/realtime-calculation/:id [GET]:
     query {
         param_list:
     }
@@ -352,7 +352,7 @@
         data: data || null
     }
 
-/graph/data-caltulation/:id [GET]:
+/graph/data-calculation/:id [GET]:
     query {
         type:
         limit:
@@ -367,6 +367,35 @@
         data: data || null
     }
 
+/vector/data/:id [GET]:
+    query {
+        selectedParameters:
+        limit:
+        date1:
+        date2:
+        modelname:
+        paramDate:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/vector/calculation/:id [GET]:
+    query {
+        selectedParameters:
+        limit:
+        date1:
+        date2:
+        modelname:
+        paramDate:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
 
 
 

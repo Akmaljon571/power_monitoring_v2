@@ -348,11 +348,6 @@ module.exports.electObjectRepository = () => {
             let existList = query && query.selectedParameters ? query.selectedParameters : parameterShortNamesList_enum
             const limit = query && query.limit ? query.limit : 150
             let subPipArray = [
-                // {
-                //     $match: {
-                //         status: "active"
-                //     },
-                // },
                 {
                     $sort: {
                         date: -1

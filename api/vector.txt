@@ -1,11 +1,11 @@
-/graph/data/:id [GET]:
+/vector/data/:id [GET]:
     query {
-        type:
-        limit:
-        modelDate:
         selectedParameters:
+        limit:
         date1:
         date2:
+        modelname:
+        paramDate:
     }
     res {
         status: 200
@@ -13,14 +13,14 @@
         data: data || null
     }
 
-/graph/data-calculation/:id [GET]:
+/vector/calculation/:id [GET]:
     query {
-        type:
-        limit:
-        modelDate:
         selectedParameters:
+        limit:
         date1:
         date2:
+        modelname:
+        paramDate:
     }
     res {
         status: 200

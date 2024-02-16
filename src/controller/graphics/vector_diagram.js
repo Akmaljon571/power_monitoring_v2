@@ -1,40 +1,35 @@
-const CustomError = require("../../helpers/customError")
-const { repositories } = require("../../db_mongodb/repository/index")
-const { sortvalueObjectsForVectorDiagram } = require("../../helpers/sortValueByDate")
-module.exports.getVectorDiagramData = () => {
-    return async (event, args) => {
-        try {
-            const documentId = args.id
-            const query = { ...args }
-            const digramDocuments = await repositories().electObjectRepository().findOneVectorDiagram(documentId, query)
-             let result = new Map()
-             if (digramDocuments) {
-                result = await sortvalueObjectsForVectorDiagram(digramDocuments.parameters,query)
-             }    
-            let stringfiedResult = JSON.stringify(Object.fromEntries(result))
-            return { status: 200, args: stringfiedResult }
-        } catch (err) {
-            return new CustomError(err.status, err.message)
-        }
+const CustomError = require("../../utils/custom_error")
+const { repositories } = require("../../repository")
+const { sortvalueObjectsForVectorDiagram } = require("../../utils/sortValueByDate")
+
+module.exports.getVectorDiagramData = async(req, res) => {
+    try {
+        const { id } = req.params
+        const query = req.data
+
+        const digramDocuments = await repositories().electObjectRepository().findOneVectorDiagram(id, query)
+        let result = new Map()
+        if (digramDocuments) result = await sortvalueObjectsForVectorDiagram(digramDocuments.parameters,query)
+
+        res.status(200).json({ status: 200, error: null, data: Object.fromEntries(result) })
+    } catch (err) {
+        const error = new CustomError(err.status, err.message)
+        res.status(error.status).json({ status: error.status, error: error.message, data: null })
     }
 }
 
+module.exports.getVectorDiagramDataCalculation = async(req, res) => {
+    try {
+        const { id } = req.params
+        const query = req.data
+        
+        const digramDocuments = await repositories().calculationObjectRepository().findOneVectorDiagram(id, query)
+        let result = new Map()
+        if (digramDocuments) result = await sortvalueObjectsForVectorDiagram(digramDocuments.parameters,query)
 
-module.exports.getVectorDiagramDataCalculation = () => {
-    return async (event, args) => {
-        try {
-            const documentId = args.id
-            const query = { ...args }
-            const digramDocuments = await repositories().calculationObjectRepository().findOneVectorDiagram(documentId, query)
-             let result = new Map()
-             if (digramDocuments) {
-                result = await sortvalueObjectsForVectorDiagram(digramDocuments.parameters,query)
-            }
-            
-            let stringfiedResult = JSON.stringify(Object.fromEntries(result))
-            return { status: 200, args: stringfiedResult }
-        } catch (err) {
-            return new CustomError(err.status, err.message)
-        }
+        res.status(200).json({ status: 200, error: null, data: Object.fromEntries(result) })
+    } catch (err) {
+        const error = new CustomError(err.status, err.message)
+        res.status(error.status).json({ status: error.status, error: error.message, data: null })
     }
 }

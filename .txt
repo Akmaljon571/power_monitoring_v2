@@ -1,7 +1,6 @@
 admin listini super ham kora oladimi ? [GET]
 tokenlarni headersdan emas cookie ga ozgartirib qoyish
 login vohtida 10X ni yoqib qoyish
-USPD ni nega 2 ta ( javobdan song yoki olib tashlash yoki qoshish )
 
 app.js ichida shu kodni qoshib qoyish {
     credentials: true,
@@ -9,3 +8,5 @@ app.js ichida shu kodni qoshib qoyish {
 }
 
 login ni erte tekshiramiz
+
+vectorni to'girlash
