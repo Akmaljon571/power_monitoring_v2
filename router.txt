@@ -10,9 +10,6 @@
     }
 
 /admin/create [POST]: 
-    headers {
-        authorization: 'admin token'
-    }
     body {
         name:
         login:
@@ -30,9 +27,6 @@
     query: {
         active || inactive
     }
-    headers {
-        authorization: 'admin or super token'
-    }
     res {
         status: 200
         error: ''
@@ -40,9 +34,6 @@
     }
 
 /admin/update/:id [PATCH]: 
-    headers {
-        authorization: 'admin token'
-    }
     body {
         name:
         login:
@@ -57,9 +48,6 @@
     }   
 
 /admin/activate/:id [PUT]: 
-    headers {
-        authorization: 'admin token'
-    }
     res {
         status: 200
         error: ''
@@ -67,9 +55,6 @@
     }
 
 /admin/remove/:id [DELETE]: 
-    headers {
-        authorization: 'admin token'
-    }
     res {
         status: 204
         error: ''
@@ -77,9 +62,6 @@
     }
 
 /meter/create [POST]: 
-    headers {
-        authorization: 'admin token'
-    }
     body {
         "connection_address":
         "connection_channel":
@@ -120,9 +102,6 @@
     }
 
 /meter/list [GET]:
-    headers {
-        authorization: 'admin or super token'
-    }
     res {
         status: 200
         error: ''
@@ -133,17 +112,54 @@
     params: {
         id: ''
     }
-    headers {
-        authorization: 'admin or super token'
-    }
     res {
         status: 200
         error: ''
         data: data || null
     }
 
-
-
+/meter/update [PATCH]: 
+    params: {
+        id: ''
+    }
+    body {
+        "connection_address":
+        "connection_channel":
+        "id":
+        "ip_address":
+        "meter_form":
+        "meter_type":
+        "name":
+        "number_meter":
+        "password":
+        "port":
+        "waiting_time":
+        "interval_time":
+        "pause_time":
+        "package_size":
+        "time_difference":
+        "days_of_month":
+        "period_type":
+        "data_polling_length":
+        "data_refresh_length":
+        "hours_of_day": [{
+            "hour":
+            "minutes": 
+        }],
+        "parameters": [{
+            "channel_full_id":
+            "param_name":
+            "param_short_name":
+            "parameter_type":
+            "status":
+            "text":
+        }] 
+    }
+    res {
+        status: 403 || 400 || 201
+        error: ''
+        data: data || null
+    }
 
 
 

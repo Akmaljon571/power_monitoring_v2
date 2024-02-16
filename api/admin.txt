@@ -1,7 +1,4 @@
 /admin/create [POST]: 
-    headers {
-        authorization: 'admin token'
-    }
     body {
         name:
         login:
@@ -19,9 +16,6 @@
     query: {
         active || inactive
     }
-    headers {
-        authorization: 'admin or super token'
-    }
     res {
         status: 200
         error: ''
@@ -29,9 +23,6 @@
     }
 
 /admin/update/:id [PATCH]: 
-    headers {
-        authorization: 'admin token'
-    }
     body {
         name:
         login:
@@ -46,9 +37,6 @@
     }   
 
 /admin/activate/:id [PUT]: 
-    headers {
-        authorization: 'admin token'
-    }
     res {
         status: 200
         error: ''
@@ -56,9 +44,6 @@
     }
 
 /admin/remove/:id [DELETE]: 
-    headers {
-        authorization: 'admin token'
-    }
     res {
         status: 204
         error: ''

@@ -95,14 +95,13 @@ module.exports.parameterRepository = () => {
         }
     }
 
-    async function updateMany(args) {
+    async function updateMany(data) {
         try {
-            let promisArray = []
-            args = args.map((element) => {
+            data = data.map((element) => {
                 return parameterModel.updateOne({ _id: element._id }, { status: element.status })
             })
 
-            Promise.all(args).then((result) => {
+            Promise.all(data).then((result) => {
                 return result
             }).catch(err => {
                 throw new CustomError(500, err.message)

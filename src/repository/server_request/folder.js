@@ -151,11 +151,11 @@ module.exports.folderObjectRepository = () => {
     }
   }
 
-  async function updateOne(id, args) {
+  async function updateOne(id, data) {
     try {
       const folderDocument = await folderModel.updateOne({
         parent_id: new mongoose.Types.ObjectId(id)
-      }, args);
+      }, data);
       return folderDocument;
     } catch (err) {
       throw new CustomError(500, err.message)
