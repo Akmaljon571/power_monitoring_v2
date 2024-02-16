@@ -491,6 +491,119 @@
         data: data || null
     }
 
+/electricity/create-folder [POST]: 
+    body {
+        name:
+        type:
+        parent_object:
+    }
+    res {
+        status: 403 || 400 || 201
+        error: ''
+        data: data || null
+    }
+
+/electricity/create-meter [POST]: 
+    body {
+        name:
+        type:
+        parent_object:
+        meter_id:
+        vt: {
+            dividend:
+            divisor:
+        }
+        ct: {
+            dividend:
+            divisor:
+        }
+        multiply: []
+    }
+    res {
+        status: 403 || 400 || 201
+        error: ''
+        data: data || null
+    }
+
+/electricity/single/:id [GET]:
+    params: {
+        id:
+    }
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/electricity/list [GET]:
+    res {
+        status: 200
+        error: ''
+        data: data || null
+    }
+
+/electricity/update-folder/:id [PUT]: 
+    params: {
+        id:
+    }
+    body {
+        name:
+    }
+    res {
+        status: 403 || 400 || 200
+        error: ''
+        data: data || null
+    }
+
+/electricity/update-meter/:id [PUT]: 
+    params: {
+        id:
+    }
+    body {
+        name:
+        vt: {
+            dividend:
+            divisor:
+        }
+        ct: {
+            dividend:
+            divisor:
+        }
+        multiply: []
+    }
+    res {
+        status: 403 || 400 || 200
+        error: ''
+        data: data || null
+    }
+
+/electricity/attach-params/:id [PATCH]: 
+    params: {
+        id:
+    }
+    body {
+        parameters: [
+            { 
+                parameter_id: 
+                sign: 
+            }
+        ]
+    }
+    res {
+        status: 403 || 400 || 200
+        error: ''
+        data: data || null
+    }
+
+/electricity/delete/:id [DELETE]: 
+    params: {
+        id:
+    }
+    res {
+        status: 403 || 400 || 204
+        error: ''
+        data: data || null
+    }
 
 
 
