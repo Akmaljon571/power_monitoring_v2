@@ -9,6 +9,7 @@ const {uspdModel} = require("./server_request/uspd")
 const {journalModel} = require("./server_request/journal")
 const {billingModel} = require("./server_request/billing")
 const {previousModel} = require('./server_request/previous_data')
+const {authSchema} = require('./server_request/auth')
 
 module.exports = Object.freeze({
     meterModel,
@@ -21,5 +22,6 @@ module.exports = Object.freeze({
     uspdModel,
     journalModel,
     billingModel,
-    previousModel
+    previousModel,
+    authSchema
 })

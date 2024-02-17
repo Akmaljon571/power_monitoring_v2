@@ -8,11 +8,6 @@ const parameterValueSchema = new mongoose.Schema({
         type:Date,
         index:true
     },
-    
-    // req_type:{
-    //    type:String,
-    //    enum:["archive","current","total"] 
-    // },
     state:{
         type:Number
     },
@@ -24,6 +19,5 @@ const parameterValueSchema = new mongoose.Schema({
 })
 
 module.exports.parameterValueModel = function(modelname){
-     return mongoose.model(modelname,parameterValueSchema)
-    //parameter_value
+    return mongoose.model(modelname,parameterValueSchema)
 } 

@@ -14,7 +14,7 @@
 
 /admin/list [GET]:
     query: {
-        active || inactive
+        status: active || inactive
     }
     res {
         status: 200

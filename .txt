@@ -10,3 +10,5 @@ app.js ichida shu kodni qoshib qoyish {
 login ni erte tekshiramiz
 
 vectorni to'girlash
+
+access_token qancha vaqt bo'ladi

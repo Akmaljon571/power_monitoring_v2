@@ -21,9 +21,9 @@ module.exports.createAdmin = async(req, res) => {
 
 module.exports.listActive = async(req, res) => {
     try {
-        const { active } = req.query
+        const { status } = req.query
         const adminList = await adminRepository().findAll()
-        if(active === 'inactive') {
+        if(status === 'inactive') {
             res.status(200).json({ status: 200, error: null, data: adminList.filter(e => !e.active)})
         } else {
             res.status(200).json({ status: 200, error: null, data: adminList.filter(e => e.active)})

@@ -8,4 +8,35 @@
         error: ''
         data: data || null
     }
+
+/logout [POST]:
+    headers {
+        session:
+    }
+    res {
+        status: 401 || 200
+        error: ''
+        data: data || null
+    }
     
+/refresh_token [POST]:
+    headers {
+        session:
+        refresh_token:
+    }
+    res {
+        status: 401 || 200
+        error: ''
+        data: data || null
+    }
+
+/single [GET]:
+    headers {
+        session:
+    }
+    res {
+        status: 401 || 200
+        error: ''
+        data: data || null
+    }
+

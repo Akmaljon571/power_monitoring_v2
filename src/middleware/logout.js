@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const { sessionParse } = require('../utils/session');
 const { repositories } = require('../repository');
 
-module.exports.adminToken_superToken = async(req, res, next) => {
+module.exports.logout = async(req, res, next) => {
     try {
         const access_token = req.cookies?.access_token;
         if (!access_token) return res.status(401).json({ status: 401, error: 'Unauthorized' });
@@ -16,12 +16,17 @@ module.exports.adminToken_superToken = async(req, res, next) => {
 
         jwt.verify(access_token, sessionData.access_token, async(err, value) => {
             if (err) return res.status(406).json({ status: 406, error: 'Not Acceptable' });
-
+            
             const find = await repositories().adminRepository().findById(value.user)
             if(find) return res.status(406).json({ status: 406, error: 'Not Acceptable' });
-            
-            if (find.role === 'admin' || find.role === 'super' ) next() 
-            else return res.status(406).json({ status: 406, error: 'Not Acceptable' });
+
+            if (find.role === 'admin' || find.role === 'super' ) {
+                await repositories().authRepository().remove({_id: id})
+                res.clearCookie('access_token')
+                res.status(204).json({status: 204})
+            } else {
+                return res.status(406).json({ status: 406, error: 'Not Acceptable' });
+            }
         });
     } catch (err) {
         const error = new CustomError(err.status, err.message)

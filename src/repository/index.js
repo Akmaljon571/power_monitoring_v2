@@ -9,6 +9,7 @@ const {uspdObjectRepository} = require("./server_request/uspd")
 const {journalRepository} = require("./server_request/journal")
 const {billingRepository} = require("./server_request/billing")
 const {previousObjectRepository} = require('./server_request/previous_data')
+const {authRepository} = require('./server_request/auth')
 
 module.exports.repositories = function(){
     return Object.freeze({
@@ -23,5 +24,6 @@ module.exports.repositories = function(){
         journalRepository,
         billingRepository,
         previousObjectRepository,
+        authRepository
     })
 }
