@@ -36,7 +36,7 @@ const channelFullIdNameList = [
    "4.8.2","4.8.3","4.8.4",
 ]
 
-const meter_type = ["EX518","TE73","TE73-V2"]
+const meter_type = ["EX518","TE73","TE73-V2", "CE_308"]
 
 const status = ["active","inactive"]
 

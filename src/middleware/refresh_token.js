@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { sessionParse, sessionCreate } = require('../utils/session');
 const { repositories } = require('../repository');
+const CustomError = require('../utils/custom_error');
 
 module.exports.refresh_token = async(req, res, next) => {
     try {
@@ -18,10 +19,10 @@ module.exports.refresh_token = async(req, res, next) => {
             if (err) return await removeSession(id, res)
 
             const find = await repositories().adminRepository().findById(value.user)
-            if(find) return await removeSession(id, res)
+            if(!find) return await removeSession(id, res)
 
             if (find.role === 'admin' || find.role === 'super' ) {
-                const access = jwt.sign({ user: user._id }, sessionData.access_token, { expiresIn: '1m' });
+                const access = jwt.sign({ user: find._id }, sessionData.access_token, { expiresIn: '1m' });
                 const newSession = sessionCreate(id, process.env.SECRET_KEY)
                 
                 res.cookie('access_token', access);

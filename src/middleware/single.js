@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { sessionParse } = require('../utils/session');
 const { repositories } = require('../repository');
+const CustomError = require('../utils/custom_error');
 
 module.exports.single = async(req, res, next) => {
     try {
@@ -18,10 +19,9 @@ module.exports.single = async(req, res, next) => {
             if (err) return res.status(406).json({ status: 406, error: 'Not Acceptable' });
             
             const find = await repositories().adminRepository().findById(value.user)
-            if(find) return res.status(406).json({ status: 406, error: 'Not Acceptable' });
+            if(!find) return res.status(406).json({ status: 406, error: 'Not Acceptable' });
 
             if (find.role === 'admin' || find.role === 'super' ) {
-                const find = await repositories().authRepository().findOne({_id: id})
                 res.status(200).json({status: 200, error: null, data: find})
             } else {
                 return res.status(406).json({ status: 406, error: 'Not Acceptable' });
