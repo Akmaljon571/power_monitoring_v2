@@ -1,0 +1,52 @@
+1.0.0
+__0 = POSITIVE_A
+____0...5 = ALL,SUM,....TARIF4
+
+1.1.0
+__1 = POSITIVE_R
+____0...5 = ALL,SUM,....TARIF4
+
+1.2.0
+__1 = NEGATIVE_A
+____0...5 = ALL,SUM,....TARIF4
+
+1.3.0
+__1 = NEGATIVE_R
+____0...5 = ALL,SUM,....TARIF4
+
+1.4
+__Volta
+
+1.5
+__Voltl
+
+1.6
+__Frequency
+
+1.7
+__Current
+
+1.8
+__Powp
+
+1.9
+__Powq
+
+1.10
+__Pows
+
+1.11
+__Coriu
+
+1.12
+__Coruu
+
+...
+
+1.15
+__Time
+
+
+2.0
+_lst
+

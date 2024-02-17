@@ -77,14 +77,15 @@ module.exports.createMeterJoi = Joi.object({
    ).optional(),
 
    parameters: Joi.array().items(
-   Joi.object({
+      Joi.object({
          channel_full_id: Joi.valid(...channelFullIdNameList).required(),
          param_name: Joi.string().required(),
          param_short_name: Joi.valid(...parameterShortNamesList).required(),
          parameter_type: Joi.valid(...parameter_type).required(),
          status: Joi.valid(...status).required(),
          text: Joi.string().optional().allow('')
-   })).required(),
+      }
+   )).required(),
 }).required()
 
 module.exports.updateMeterJoi = Joi.object({
