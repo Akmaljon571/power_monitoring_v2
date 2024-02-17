@@ -36,7 +36,7 @@ const channelFullIdNameList = [
    "4.8.2","4.8.3","4.8.4",
 ]
 
-const meter_type = ["EX518","TE73","TE73-V2"]
+const meter_type = ["EX518","TE73","TE73-V2", "CE_308"]
 
 const status = ["active","inactive"]
 
@@ -77,14 +77,15 @@ module.exports.createMeterJoi = Joi.object({
    ).optional(),
 
    parameters: Joi.array().items(
-   Joi.object({
+      Joi.object({
          channel_full_id: Joi.valid(...channelFullIdNameList).required(),
          param_name: Joi.string().required(),
          param_short_name: Joi.valid(...parameterShortNamesList).required(),
          parameter_type: Joi.valid(...parameter_type).required(),
          status: Joi.valid(...status).required(),
          text: Joi.string().optional().allow('')
-   })).required(),
+      }
+   )).required(),
 }).required()
 
 module.exports.updateMeterJoi = Joi.object({

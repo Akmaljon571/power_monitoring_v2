@@ -4,8 +4,9 @@ const cors = require('cors')
 const { Server } = require('socket.io')
 const { connectDB } = require('./utils/connect_db')
 const { router } = require('./router')
-const { socketIO } = require('./web/socket')
+const { socketIO, sendMessage } = require('./web/socket')
 const cookieParser = require('cookie-parser')
+const { getDataFromMiddleware } = require('./connection')
 require('dotenv').config()
 
 const app = express()
@@ -24,6 +25,8 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(router);
+getDataFromMiddleware(sendMessage(io))
+
 app.use((err, req, res, next) => {
     console.log(err)
     res.status(err.status).json({ status: err.status, error: err.message, data: null });

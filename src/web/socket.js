@@ -12,3 +12,9 @@ module.exports.socketIO = (io) => {
         });
     });
 };
+
+module.exports.sendMessage = (io) => {
+    return (id, status) => {
+        io.emit("send_message", { id, status });
+    }
+}
