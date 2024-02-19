@@ -39,20 +39,6 @@ module.exports.getDashboardData = async(req, res) => {
     }
 }
 
-module.exports.getDashboardRealtimeData = async(req, res) => {
-    try {
-        const { id } = req.params
-        const { year, month } = req.data
-        const query = { modelDate: [year, month, 0] }
-        const realtimeDocuments = await repositories().electObjectRepository().findOneAndGetRealtime(id, query)
-
-        res.status(200).json({ status: 200, error: null, data: realtimeDocuments })
-    } catch (err) {
-        const error = new CustomError(err.status, err.message)
-        res.status(error.status).json({ status: error.status, error: error.message, data: null })
-    }
-}
-
 module.exports.getDashboardDataCalculation = async(req, res) => {
     try {
         const { id } = req.params
@@ -69,17 +55,3 @@ module.exports.getDashboardDataCalculation = async(req, res) => {
         res.status(error.status).json({ status: error.status, error: error.message, data: null })
     }
 }
-
-module.exports.getDashboardRealtimeDataCalculation = async(req, res) => {
-    try {
-        const { id } = req.params
-        const query = req.data
-
-        const realtimeDocuments = await repositories().calculationObjectRepository().findOneAndGetRealtime(id, query)
-        res.status(200).json({ status: 200, error: null, data: realtimeDocuments })
-    } catch (err) {
-        const error = new CustomError(err.status, err.message)
-        res.status(error.status).json({ status: error.status, error: error.message, data: null })
-    }
-}
-

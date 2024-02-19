@@ -4,7 +4,7 @@ const cors = require('cors')
 const { Server } = require('socket.io')
 const { connectDB } = require('./utils/connect_db')
 const { router } = require('./router')
-const { socketIO, sendMessage } = require('./web/socket')
+const { socketIO, sendMessage, realTime } = require('./web/socket')
 const cookieParser = require('cookie-parser')
 const { getDataFromMiddleware } = require('./connection')
 require('dotenv').config()
@@ -25,7 +25,7 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(router);
-getDataFromMiddleware(sendMessage(io))
+getDataFromMiddleware(sendMessage(io), realTime(io))
 
 app.use((err, req, res, next) => {
     console.log(err)

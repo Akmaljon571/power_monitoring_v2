@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const { meterModel, calculationObjectModel } = require("../../models")
+const { calculationObjectModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 
 module.exports.calculationObjectRepository = () => {
@@ -17,8 +17,7 @@ module.exports.calculationObjectRepository = () => {
         findOneGraphAndObjectArchive,
         findOneGraphAndObjectCurrent,
         findOneAndDataList,
-        findOneAndDashboard,
-        findOneAndGetRealtime
+        findOneAndDashboard
     })
 
     async function countDocuments(args) {
@@ -898,106 +897,6 @@ module.exports.calculationObjectRepository = () => {
 
             const electObjectDocument = await calculationObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
             return electObjectDocument[0]
-        } catch (err) {
-            throw new CustomError(500, err.message)
-        }
-    }
-
-    async function findOneAndGetRealtime(id, query) {
-        try {
-            let modelname = "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
-            const existList = query.param_list ? query.param_list : ["active-power_total", "full-power_total", "reactive-power_total", "coef-active-power_total"]
-            let subPipArray = [
-                {
-                    $sort: {
-                        date: -1
-                    }
-                },
-                {
-                    $limit: 1
-                }
-            ]
-            const electObjectPipelines = [
-                {
-                    $match: {
-                        _id: new mongoose.Types.ObjectId(id)
-                    }
-                },
-                {
-                    $unwind: {
-                        path: "$parameters",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "parameters",
-                        localField: "parameters.parameter_id",
-                        foreignField: "_id",
-                        as: "parameters.param_details"
-                    }
-                },
-                {
-                    $unwind: "$parameters.param_details"
-                },
-                {
-                    "$group": {
-                        "_id": "$_id",
-                        "parameters": {
-                            "$push": "$parameters"
-                        },
-                        "name": { $first: "$name" },
-                        "type": { $first: "$type" },
-                        "createdAt": { $first: "$createdAt" },
-                        "updatedAt": { $first: "$updatedAt" },
-                        "child_objects": { $first: "$child_objects" },
-                    }
-                },
-                {
-                    $project: {
-                        parameters: {
-                            $filter: {
-                                input: "$parameters",
-                                as: "param",
-                                cond: {
-                                    $in: [
-                                        "$$param.param_details.param_short_name",
-                                        existList
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                },
-                {
-                    $unwind: "$parameters"
-                },
-                {
-                    $lookup: {
-                        from: modelname,
-                        localField: "parameters.param_details._id",
-                        foreignField: "parameter",
-                        pipeline: subPipArray,
-                        as: "parameters.parameter_values"
-                    }
-                },
-                {
-                    "$group": {
-                        "_id": "$_id",
-                        "parameters": {
-                            "$push": "$parameters"
-                        },
-                        "name": { $first: "$name" },
-                        "type": { $first: "$type" },
-                        "createdAt": { $first: "$createdAt" },
-                        "updatedAt": { $first: "$updatedAt" },
-                        "child_objects": { $first: "$child_objects" },
-                    }
-                }
-            ]
-
-            const realtimeDocuments = await calculationObjectModel.aggregate(electObjectPipelines)
-            return realtimeDocuments[0]
         } catch (err) {
             throw new CustomError(500, err.message)
         }

@@ -19,7 +19,6 @@ module.exports.electObjectRepository = () => {
         findOneGraphAndObjectCurrent,
         findOneAndDataList,
         findOneAndDashboard,
-        findOneAndGetRealtime,
         firstTemplateReport,
         remove,
         insertParentParams
@@ -1015,129 +1014,6 @@ module.exports.electObjectRepository = () => {
 
             const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
             return electObjectDocument[0]
-        } catch (err) {
-            throw new CustomError(500, err.message)
-        }
-    }
-
-    async function findOneAndGetRealtime(id, query) {
-        try {
-            let modelname = query && query.modelDate ? "parameter_values_" + new Date(...query.modelDate).getFullYear() + new Date(...query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
-            const active = ["active-power_A", "active-power_B", "active-power_C"]
-            const full = ["full-power_A", "full-power_B", "full-power_C"]
-            const coef = ["coef-active-power_A", "coef-active-power_B", "coef-active-power_C"]
-            const reactive = ["reactive-power_A", "reactive-power_B", "reactive-power_B"]
-            const existList = [...active, ...full, ...coef, ...reactive]
-            let subPipArray = [
-                {
-                    $sort: {
-                        date: -1
-                    }
-                },
-                {
-                    $limit: 1
-                }
-            ]
-            const electObjectPipelines = [
-                {
-                    $match: {
-                        _id: new mongoose.Types.ObjectId(id)
-                    }
-                },
-                {
-                    $unwind: {
-                        path: "$parameters",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "parameters",
-                        localField: "parameters.parameter_id",
-                        foreignField: "_id",
-                        as: "parameters.param_details"
-                    }
-                },
-                {
-                    $unwind: {
-                        path: "$parameters.param_details",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    "$group": {
-                        "_id": "$_id",
-                        "parameters": {
-                            "$push": "$parameters"
-                        },
-                        "name": { $first: "$name" },
-                        "type": { $first: "$type" },
-                        "createdAt": { $first: "$createdAt" },
-                        "updatedAt": { $first: "$updatedAt" },
-                        "child_objects": { $first: "$child_objects" },
-                    }
-                },
-                {
-                    $project: {
-                        parameters: {
-                            $filter: {
-                                input: "$parameters",
-                                as: "param",
-                                cond: {
-                                    $in: [
-                                        "$$param.param_details.param_short_name",
-                                        existList
-                                    ]
-                                }
-                            }
-                        },
-                        name: 1,
-                        type: 1,
-                        createdAt: 1,
-                        updatedAt: 1,
-                        child_objects: 1
-                    }
-                },
-                {
-                    $unwind: "$parameters"
-                },
-                {
-                    $lookup: {
-                        from: modelname,
-                        localField: "parameters.param_details._id",
-                        foreignField: "parameter",
-                        pipeline: subPipArray,
-                        as: "parameters.parameter_values"
-                    }
-                },
-                {
-                    "$group": {
-                        "_id": "$_id",
-                        "parameters": {
-                            "$push": "$parameters"
-                        },
-                        "name": { $first: "$name" },
-                        "type": { $first: "$type" },
-                        "createdAt": { $first: "$createdAt" },
-                        "updatedAt": { $first: "$updatedAt" },
-                        "child_objects": { $first: "$child_objects" },
-                    }
-                }
-            ]
-            const realtimeDocuments = await electObjectModel.aggregate(electObjectPipelines)
-            let result = {active_power_total: 0, reactive_power_total: 0, full_power_total: 0, coef_active_total: 0, date: realtimeDocuments[0]?.createAt}
-            realtimeDocuments[0]?.parameters?.map(e => {
-                if(active.includes(e.param_details.param_short_name)){
-                    result.active_power_total += e.parameter_values.length ? e.parameter_values[0].value : 0
-                } else if(full.includes(e.param_details.param_short_name)){
-                    result.full_power_total += e.parameter_values.length ? e.parameter_values[0].value : 0
-                } else if(coef.includes(e.param_details.param_short_name)){
-                    result.coef_active_total += e.parameter_values.length ? e.parameter_values[0].value : 0
-                } else if(reactive.includes(e.param_details.param_short_name)){
-                    result.reactive_power_total += e.parameter_values.length ? e.parameter_values[0].value : 0
-                }
-            })
-            return result
         } catch (err) {
             throw new CustomError(500, err.message)
         }
