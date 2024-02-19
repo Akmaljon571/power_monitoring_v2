@@ -84,13 +84,15 @@ function getEnergomeraResult(data, key, opt) {
             return { [key]: `${today[0]} ${today[1].replace('.', '/')}` };
             case 'lst':
             return { [key]: value }
+            case '3.0':
+            return getProfile1(data, opt)
+            case '2.0':
+            return createResultA_R(data, key, opt)
             case 'cAutoReading':
             return createResultA_R(data)
             default:
             const ifExist = ['positiveA', 'positiveR', 'negativeA', 'negativeR']
-            if (key.includes('profile')) {
-                return getProfile(data, opt)
-            } else if (ifExist.includes(key.split('.')[0])){
+            if (ifExist.includes(key.split('.')[0])){
                 return createResultA_R(data, key, opt)
             } else {
                 console.log(key, data, 'hammasi ok');
@@ -139,50 +141,87 @@ function createResultA_R(param, keyResult='', optDate) {
     return value;
 }
 
-function getProfile(param, optDate) {
-    let returnResponse = { date: '', loadProfile: [] }
-    for (const i of param) {
+function getProfile1(data) {
+    const results = []
+    for (const i of data) {
         let extactedData = extractorFunc(i.data)
         let currentTime = new Date();
         currentTime.setHours(0, 0, 0, 0);
         let from = new Date(currentTime);
         let to = new Date(currentTime);
         
-        
-        if (extactedData[0].split(',').length <= 1) {
-            let data = extactedData.map(value => {
-                const data = {
-                    value,
-                    ...fromToDate(from,to)
+        if (i?.date) {
+            for (const j of extactedData) {
+                let newDate = `${i.date} ${fromToDate(from,to).to}`
+                if (!results.length) {
+                    results.push({
+                        date: newDate,
+                        [i.key]: j
+                    })
+                } else {
+                    if (results.filter(k => k.date.includes(i.date) && Object.keys(k).includes(i.key)).length) {
+                        if (!results.filter(k => k.date.includes(newDate)).length) {
+                            results.push({
+                                date: newDate,
+                                [i.key]: j
+                            })
+                        } else {
+                            results.filter(k => k.date.includes(newDate))[0][i.key] = j
+                        }
+                    } else {
+                        if (!results.filter(k => k.date.includes(i.date)).length) {
+                            results.push({
+                                date: newDate,
+                                [i.key]: j
+                            })
+                        }
+                        results.filter(k => k.date.includes(newDate))[0][i.key] = j
+                    }
                 }
-                from = new Date(to);
-                return data;
-            })
-            
-            returnResponse.date = optDate
-            returnResponse.loadProfile.push({ [i.key]: data})
-            
+            }
         } else {
             let str = extactedData.shift()
             let [date, ...second] = str.split(',')
             extactedData = [second.join(','), ...extactedData]
             
-            let data = extactedData.map(value => {
-                const [valueRes, status] = value.split(',');
-                const data = {
-                    valueRes,
-                    status,
-                    ...fromToDate(from,to)
+            for (const j of extactedData) {
+                const [valueRes, status] = j.split(',');
+                let newDate = `${date} ${fromToDate(from,to).to}`
+                if (!results.length) {
+                    results.push({
+                        date: newDate,
+                        status,
+                        [i.key]: valueRes
+                    })
+                } else {
+                    if (results.filter(k => k.date.includes(date) && Object.keys(k).includes(i.key)).length) {
+                        if (!results.filter(k => k.date.includes(newDate)).length) {
+                            results.push({
+                                date: newDate,
+                                status,
+                                [i.key]: valueRes
+                            })
+                        } else {
+                            results.filter(k => k.date.includes(newDate))[0][i.key] = valueRes
+                        }
+                    } else {
+                        if (!results.filter(k => k.date.includes(date)).length) {
+                            results.push({
+                                date: newDate,
+                                status,
+                                [i.key]: valueRes
+                            })
+                        }
+                        results.filter(k => k.date.includes(newDate))[0][i.key] = valueRes
+                    }
                 }
-                from = new Date(to);
-                return data;
-            })
-            returnResponse.date += returnResponse.date.length ? `, ${date}` : date
-            returnResponse.loadProfile.push({[i.key]: data})
+            }
         }
     }
-    return returnResponse
+
+    return results
 }
+
 
 function fromToDate(from, to) {
     to.setMinutes(to.getMinutes() + 30);

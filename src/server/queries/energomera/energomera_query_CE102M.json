@@ -48,6 +48,12 @@
         "negativeR": {
             "all": []
         }
-    }
+    },
+    "loadProfile": {
+            "profile1": [],
+            "profile2": [],
+            "profile3": [],
+            "profile4": []
+        }
 }
 ]

@@ -21,7 +21,7 @@ const parameterShortNamesList = [
    "total_A+_1", "total_A+_2", "total_A+_3", "total_A+_4",
    "total_A-_1", "total_A-_2", "total_A-_3", "total_A-_4",
    "total_R+_1", "total_R+_2", "total_R+_3", "total_R+_4",
-   "total_R-_1", "total_R-_2", "total_R-_3", "total_R-_4", 
+   "total_R-_1", "total_R-_2", "total_R-_3", "total_R-_4"
 ]
 
 const channelFullIdNameList = [

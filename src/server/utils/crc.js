@@ -78,24 +78,25 @@ function TE_Command(array) {
 
     let newCommand = [startCommand, ...newArray, endCommand];
 
-    if (newArray.length === 10) {
-        newCommand = [startCommand, ...newArray, endCommand];
-    } else {
+    if (newArray.length !== 10) {
         newArray.splice(newArray.length - 2, 2);
         let crc2 = ax25crc16(newArray)
             .toUpperCase()
             .padStart(4, '0')
             .match(/.{1,2}/g);
+            // console.log(crc1, crc2)
         newCommand = [startCommand, ...newArray, ...crc2, endCommand];
     }
     const result = [];
     for (let i = 0; i < newCommand.length; i++) {
         result.push(parseInt(newCommand[i], 16));
     }
-    return Buffer.from(result);
+    
+    // console.log(Buffer.from(result));
+    return Buffer.from(result)
 }
 
-// console.log(111, TE_Command(["7e", "a0", "16", "00", "02", "4c", "73", "05", "3a", "b3", "0b", "e6", "e6", "00", "c0", "02", "c1", "00", "00", "00", "0b", "b1", "01", "7e"]));
+// console.log(111, TE_Command(["7e", "a0", "16", "00", "02", "4c", "73", "05", "74", "c9", "a0", "e6", "e6", "00", "c0", "02", "c1", "00", "00", "00", "00", "5d", "fd", "7e"]));
 
 
 function sumOfDecimal(numberArray) {

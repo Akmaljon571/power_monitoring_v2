@@ -164,17 +164,16 @@ async function getLstCounterResult(data) {
                         startCommands.splice(3,1)
                         await closePort(port)
                     }
-                    result.push(getEnergomeraResult(getValue, getObjectKeyValue(i)))
-                    getValue=[]
                 }
+                return getEnergomeraResult(getValue, data.ReadingRegister[0])
             } else if (!checkCounterExist(type[1], '308')) {
                 let date = dateConvertor(lstReq,null,'YYYY-MM-DD')
+                console.log(123);
                 lstResultIndex = getDaysArray(new Date(date.from),new Date(date.to)).map(i => Array.from(i, c => c.charCodeAt(0)))
                 for(let i of getCommands) {
                     if (!getObjectKeyValue(i, 'value')?.length) {
                         continue
                     } else {
-                        let date = ''
                         for(let j of lstResultIndex) {
                             let insert = {[getObjectKeyValue(i)]: ObisQuery.parseValue(getObjectKeyValue(i, 'value'),j,10)}
                             startCommands.splice(3,0,insert)
@@ -182,17 +181,15 @@ async function getLstCounterResult(data) {
                             for(let k of startCommands) {
                                 let {data,key} = await serialPortEngine(k, port)
                                 if (data && !allowParametres.includes(key)) {
-                                    date += date.length ? `, ${String.fromCharCode(...j)}` : String.fromCharCode(...j)
-                                    getValue.push({key, data})
+                                    getValue.push({key, data, date: String.fromCharCode(...j)})
                                 }
                             }
                             startCommands.splice(3,1)
                             await closePort(port)
                         }
-                        result.push(getEnergomeraResult(getValue, getObjectKeyValue(i), date))
-                        getValue=[]
                     }
                 }
+                return getEnergomeraResult(getValue, data.ReadingRegister[0])
             }
         } else {
             return [{data: 'this type of counter not written yet'}]

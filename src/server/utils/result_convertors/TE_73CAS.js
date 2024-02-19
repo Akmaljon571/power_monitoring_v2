@@ -3,9 +3,9 @@ module.exports = { getTE_73Result };
 function getTE_73Result(data, key) {
     try {
         const hexString = data.toString('hex');
-        let dataBufArray = hexString.split(hexString.slice(0, 26))[1].match(/.{1,2}/g).slice(0, -3);
+        let dataBufArray = key != 'profile' ? hexString.split(hexString.slice(0, 26))[1].match(/.{1,2}/g).slice(0, -3) : data
         
-        let currentVal = dataBufArray.join('').slice(-8);
+        let currentVal = key != 'profile' ? dataBufArray.join('').slice(-8) : data
         let newKey = key.split('.');
         
         if (newKey.length === 2) {
@@ -20,7 +20,7 @@ function getTE_73Result(data, key) {
                 else if (newKey[0].includes('volt')) key = 'Voltage';
                 else if (newKey[0].includes('cor')) key = 'Cor';
             }
-            const resOfCurrent = parseInt(currentVal.slice(-4), 16);
+            const resOfCurrent = key != 'profile' ? parseInt(currentVal.slice(-4), 16) : data
             switch (key) {
                 case 'currentDate':
                 return { [key]: currentDate(dataBufArray) };
@@ -36,7 +36,8 @@ function getTE_73Result(data, key) {
                 case 'Cor':
                 return { [newKey.join('.')]: parseInt(currentVal, 16) / 1000 };
                 default:
-                return { [key]: resOfCurrent };
+                    getProfile(data)
+                return { [key]: 123 };
             }
         } catch (error) {
             throw new Error(error.message);
@@ -58,4 +59,7 @@ function getTE_73Result(data, key) {
         function pad2(n) {
             return String(n).padStart(2, '0');
         }
-        
+
+        function getProfile(params) {
+            
+        }

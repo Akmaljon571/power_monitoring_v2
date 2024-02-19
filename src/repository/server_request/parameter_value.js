@@ -96,9 +96,10 @@ module.exports.parameterValueRepository = () => {
     async function findTodayList(dateTime) {
         try {
             const date = new Date(dateTime)
-            date.setUTCHours(0)
-            const parameterDocument = await parameterValueModel('parameter_values').find({param_short_name: 'energyarchive_A+'})
+            date.setHours(0, 0, 0)
+            const parameterDocument = await parameterValueModel('parameter_values').find({ date: { $gt: date } })
             const todayDatas = parameterDocument.filter(e => new Date(e.date) - new Date(date) >= 0).sort((a, b) => a.date - b.date)
+            
             let obj = {
                 time: 0,
                 last_add: date,
