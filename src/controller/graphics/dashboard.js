@@ -3,7 +3,7 @@ const { repositories } = require("../../repository")
 
 module.exports.getDashboardData = async(req, res) => {
     try {
-        const { id } = req.id
+        const { id } = req.params
         const query = req.data
 
         query.childObjects = query.childObjects && query.childObjects === false ? query.childObjects : true

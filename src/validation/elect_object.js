@@ -11,7 +11,7 @@ module.exports.createElectFolder = Joi.object().keys({
 }).required()
 
 module.exports.getQuery = Joi.object().keys({
-    type: Joi.valid('meter', 'feeder').required(),
+    type: Joi.string().required(),
 }).required()
 
 module.exports.createElectMeter = Joi.object().keys({

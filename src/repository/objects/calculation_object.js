@@ -21,7 +21,7 @@ module.exports.calculationObjectRepository = () => {
         findOneAndGetRealtime
     })
 
-    async function countDocuments(args){
+    async function countDocuments(args) {
         try {
             return await calculationObjectModel.countDocuments(args)
         } catch (err) {
@@ -40,7 +40,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function update(_id, query) {
         try {
-            const objectDocuments = await calculationObjectModel.updateOne({ _id }, { $set: query})
+            const objectDocuments = await calculationObjectModel.updateOne({ _id }, { $set: query })
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -76,8 +76,8 @@ module.exports.calculationObjectRepository = () => {
 
     async function remove(id) {
         try {
-            const find = await calculationObjectModel.findOne({ parent_object: id }, )
-            if(find) {
+            const find = await calculationObjectModel.findOne({ parent_object: id },)
+            if (find) {
                 await calculationObjectModel.deleteOne({ _id: id })
                 remove(find._id)
             }
@@ -97,12 +97,12 @@ module.exports.calculationObjectRepository = () => {
                         localField: "_id",
                         foreignField: "parent_object",
                         pipeline: [
-                            { 
-                               $lookup: {
-                                  from: "calculation_objects",
-                                  localField: "_id",
-                                  foreignField: "parent_object",
-                                  as: "child_objects"
+                            {
+                                $lookup: {
+                                    from: "calculation_objects",
+                                    localField: "_id",
+                                    foreignField: "parent_object",
+                                    as: "child_objects"
                                 }
                             }
                         ],
@@ -111,7 +111,7 @@ module.exports.calculationObjectRepository = () => {
                 },
                 {
                     $unwind: {
-                        path:"$parameters",
+                        path: "$parameters",
                         preserveNullAndEmptyArrays: true
                     }
                 },
@@ -165,12 +165,12 @@ module.exports.calculationObjectRepository = () => {
                         localField: "_id",
                         foreignField: "parent_object",
                         pipeline: [
-                            { 
-                               $lookup: {
-                                  from: "calculation_objects",
-                                  localField: "_id",
-                                  foreignField: "parent_object",
-                                  as: "child_objects"
+                            {
+                                $lookup: {
+                                    from: "calculation_objects",
+                                    localField: "_id",
+                                    foreignField: "parent_object",
+                                    as: "child_objects"
                                 }
                             }
                         ],
@@ -179,7 +179,7 @@ module.exports.calculationObjectRepository = () => {
                 },
                 {
                     $unwind: {
-                        path:"$parameters",
+                        path: "$parameters",
                         preserveNullAndEmptyArrays: true
                     }
                 },
@@ -199,6 +199,7 @@ module.exports.calculationObjectRepository = () => {
                         },
                         "name": { $first: "$name" },
                         "type": { $first: "$type" },
+                        "parent_object": { $first: "$parent_object" },
                         "createdAt": { $first: "$createdAt" },
                         "updatedAt": { $first: "$updatedAt" },
                         "child_objects": { $first: "$child_objects" },
@@ -214,22 +215,22 @@ module.exports.calculationObjectRepository = () => {
 
     async function findOneVectorDiagram(id, query) {
         try {
-            let modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth(): "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
-            if(query && query.paramDate){
-                 query.startDate = new Date(query.paramDate)
-                 query.startDate.setUTCHours(0)
-                 query.finishDate = new Date(query.startDate)
-                 query.finishDate.setDate(query.startDate.getDate()+1)
+            let modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
+            if (query && query.paramDate) {
+                query.startDate = new Date(query.paramDate)
+                query.startDate.setUTCHours(0)
+                query.finishDate = new Date(query.startDate)
+                query.finishDate.setDate(query.startDate.getDate() + 1)
             }
-            let existList =  [
-                "voltage_A","voltage_B","voltage_C","voltage_AB","voltage_BC","voltage_AC",
-                "current_A","current_B","current_C",
+            let existList = [
+                "voltage_A", "voltage_B", "voltage_C", "voltage_AB", "voltage_BC", "voltage_AC",
+                "current_A", "current_B", "current_C",
                 "frequency",
-                "active-power_A","active-power_B","active-power_C","active-power_total",
-                "reactive-power_A","reactive-power_B","reactive-power_C","reactive-power_total",
-                "full-power_A","full-power_B","full-power_C","full-power_total",
-                "coef-active-power_A","coef-active-power_B","coef-active-power_C","coef-active-power_total",
-                "coef-reactive-power_A","coef-reactive-power_B","coef-reactive-power_C","coef-reactive-power_total"
+                "active-power_A", "active-power_B", "active-power_C", "active-power_total",
+                "reactive-power_A", "reactive-power_B", "reactive-power_C", "reactive-power_total",
+                "full-power_A", "full-power_B", "full-power_C", "full-power_total",
+                "coef-active-power_A", "coef-active-power_B", "coef-active-power_C", "coef-active-power_total",
+                "coef-reactive-power_A", "coef-reactive-power_B", "coef-reactive-power_C", "coef-reactive-power_total"
             ]
             const limit = query && query.limit ? query.limit : 150
             let subPipArray = [
@@ -354,13 +355,13 @@ module.exports.calculationObjectRepository = () => {
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
-        } 
+        }
     }
 
     async function findOneGraphAndObjectArchive(id, query) {
         try {
             let existList = query && query.selectedParameters ? query.selectedParameters : ["energyarchive_A+", "energyarchive_A-", "energyarchive_R+", "energyarchive_R-"]
-         
+
             const limit = query && query.limit ? query.limit : 150
             let subPipArray = [
                 {
@@ -407,10 +408,10 @@ module.exports.calculationObjectRepository = () => {
                     }
                 },
                 {
-                    $unwind:{
-                        path:"$parameters.param_details",
+                    $unwind: {
+                        path: "$parameters.param_details",
                         preserveNullAndEmptyArrays: true
-                    } 
+                    }
                 },
                 {
                     "$group": {
@@ -479,7 +480,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function findOneGraphAndObjectCurrent(id, query) {
         try {
-            let modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth(): "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
+            let modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
             let existList = query && query.selectedParameters ? query.selectedParameters : [
                 "energycurrent_A+", "energycurrent_A-", "energycurrent_R+", "energycurrent_R-",
                 "voltage_A", "voltage_B", "voltage_C", "voltage_AB", "voltage_BC", "voltage_AC",
@@ -521,7 +522,7 @@ module.exports.calculationObjectRepository = () => {
                     }
                 })
             }
-          
+
             const pipArray = [
                 {
                     $match: {
@@ -585,9 +586,9 @@ module.exports.calculationObjectRepository = () => {
                         from: modelname,
                         localField: "parameters.param_details._id",
                         foreignField: "parameter",
-           
-           
-           
+
+
+
                         pipeline: subPipArray,
                         as: "parameters.parameter_values"
                     }
@@ -619,8 +620,8 @@ module.exports.calculationObjectRepository = () => {
             let modelname = 'parameter_values'
             let existList = query.selectedParameters ? query.selectedParameters : ["energytotal_A+", "energytotal_A-", "energytotal_R+", "energytotal_R-"]
 
-            if(query.type === "current"){
-                modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth() 
+            if (query.type === "current") {
+                modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
             }
             const limit = query.limit ? query.limit : 150
             let subPipArray = [
@@ -733,7 +734,7 @@ module.exports.calculationObjectRepository = () => {
                     }
                 }
             ]
-     
+
             const calculationDocuments = await calculationObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
             return calculationDocuments[0]
         } catch (err) {
@@ -741,37 +742,37 @@ module.exports.calculationObjectRepository = () => {
         }
     }
 
-    async function findOneAndDashboard(id, query,type) {
+    async function findOneAndDashboard(id, query, type) {
         try {
             const existList = query.selectedParameters ? query.selectedParameters : ["energyarchive_A+", "energyarchive_A-", "energyarchive_R+", "energyarchive_R-"]
             const year = query.year ? query.year : new Date().getFullYear()
-            const month = query.month? query.month: new Date().getMonth() 
+            const month = query.month ? query.month : new Date().getMonth()
             let subPipArrayDaily = [
                 {
                     $match: {
                         $expr: {
                             $and: [
-                              { $eq: [{ $month: '$date' }, month] }, 
-                              { $eq: [{ $year: '$date' }, year] } 
+                                { $eq: [{ $month: '$date' }, month] },
+                                { $eq: [{ $year: '$date' }, year] }
                             ]
-                          }
-                    }
-                }, 
-                {
-                    $addFields: {
-                        day:{$dayOfMonth:"$date"},
-                        month:{$month:"$date"},
-                        year:{$year:"$date"}
+                        }
                     }
                 },
                 {
-                    $group:{
-                        _id:{
-                            day:"$day",
-                            month:"$month",
-                            year:"$year"
+                    $addFields: {
+                        day: { $dayOfMonth: "$date" },
+                        month: { $month: "$date" },
+                        year: { $year: "$date" }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            day: "$day",
+                            month: "$month",
+                            year: "$year"
                         },
-                        value:{$sum:"$value"}
+                        value: { $sum: "$value" }
                     }
                 },
                 {
@@ -785,24 +786,24 @@ module.exports.calculationObjectRepository = () => {
             let subPipArrayMonthly = [
                 {
                     $match: {
-                        $expr: {     
-                           $eq: [{ $year: '$date' }, year]     
-                          }
-                    }
-                }, 
-                {
-                    $addFields: {
-                        month:{$month:"$date"},
-                        year:{$year:"$date"}
+                        $expr: {
+                            $eq: [{ $year: '$date' }, year]
+                        }
                     }
                 },
                 {
-                    $group:{
-                        _id:{
-                            month:"$month",
-                            year:"$year"
+                    $addFields: {
+                        month: { $month: "$date" },
+                        year: { $year: "$date" }
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            month: "$month",
+                            year: "$year"
                         },
-                        value:{$sum:"$value"}
+                        value: { $sum: "$value" }
                     }
                 },
                 {
@@ -876,7 +877,7 @@ module.exports.calculationObjectRepository = () => {
                         from: "parameter_values",
                         localField: "parameters.param_details._id",
                         foreignField: "parameter",
-                        pipeline: type === "monthly"?subPipArrayMonthly:subPipArrayDaily,
+                        pipeline: type === "monthly" ? subPipArrayMonthly : subPipArrayDaily,
                         as: "parameters.parameter_values"
                     }
                 },
@@ -902,7 +903,6 @@ module.exports.calculationObjectRepository = () => {
         }
     }
 
-
     async function findOneAndGetRealtime(id, query) {
         try {
             let modelname = "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
@@ -925,7 +925,7 @@ module.exports.calculationObjectRepository = () => {
                 },
                 {
                     $unwind: {
-                        path:"$parameters",
+                        path: "$parameters",
                         preserveNullAndEmptyArrays: true
                     }
                 },

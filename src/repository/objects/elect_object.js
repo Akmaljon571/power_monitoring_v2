@@ -1125,8 +1125,8 @@ module.exports.electObjectRepository = () => {
                 }
             ]
             const realtimeDocuments = await electObjectModel.aggregate(electObjectPipelines)
-            let result = {active_power_total: 0, reactive_power_total: 0, full_power_total: 0, coef_active_total: 0}
-            realtimeDocuments[0].parameters.map(e => {
+            let result = {active_power_total: 0, reactive_power_total: 0, full_power_total: 0, coef_active_total: 0, date: realtimeDocuments[0]?.createAt}
+            realtimeDocuments[0]?.parameters?.map(e => {
                 if(active.includes(e.param_details.param_short_name)){
                     result.active_power_total += e.parameter_values.length ? e.parameter_values[0].value : 0
                 } else if(full.includes(e.param_details.param_short_name)){

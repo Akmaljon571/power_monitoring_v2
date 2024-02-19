@@ -17,8 +17,7 @@ module.exports.getSingleElectricityObject = async(req, res) => {
    try {
       const { id } = req.params
       const objectDocument = await repositories().electObjectRepository().findOne(id, req.data)
-
-      res.status(200).json({ status: 200, error: null, data: objectDocument })
+      res.status(200).json({ status: 200, error: null, data: objectDocument || {} })
    } catch (err) {
       const error = new CustomError(err.status, err.message)
       res.status(error.status).json({ status: error.status, error: error.message, data: null })
