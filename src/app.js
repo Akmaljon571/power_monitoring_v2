@@ -12,7 +12,7 @@ require('dotenv').config()
 const app = express()
 const server = http.createServer(app);
 const PORT = process.env.PORT || 1000
-const DB =process.env.DB
+const DB = process.env.DB
 
 const io = new Server(server, {
     cors: {
@@ -33,5 +33,4 @@ app.use((err, req, res, next) => {
 });
 
 socketIO(io);
-
 connectDB(server, PORT, DB).then(() => { });

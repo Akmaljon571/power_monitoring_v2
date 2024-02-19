@@ -7,7 +7,7 @@ const { getGraphsAndObjectDataArchive, getGraphsAndObjectCurrent, getGraphsAndOb
 
 module.exports.graphRouter = Router()
     .get('/data/:id', adminToken_superToken, validateQuery(grahpData), getGraphDataList)
-    .get('/data-caltulation/:id', adminToken_superToken, validateQuery(grahpData), getGraphDataListCalculation)
+    .get('/data-calculation/:id', adminToken_superToken, validateQuery(grahpData), getGraphDataListCalculation)
     .get('/data-archive/:id', adminToken_superToken, validateQuery(graphArchive), getGraphsAndObjectDataArchive)
     .get('/data-current/:id', adminToken_superToken, validateQuery(graphArchive), getGraphsAndObjectCurrent)
     .get('/calculation-archive/:id', adminToken_superToken, validateQuery(graphArchive), getGraphsAndObjectDataCalculationArchive)

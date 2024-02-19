@@ -6,5 +6,5 @@ const { getVectorDiagramData, getVectorDiagramDataCalculation } = require("../..
 
 module.exports.vectorRouter = Router()
     .get('/data/:id', adminToken_superToken, validateQuery(vector), getVectorDiagramData)
-    .get('/caltulation/:id', adminToken_superToken, validateQuery(vector), getVectorDiagramDataCalculation)
+    .get('/calculation/:id', adminToken_superToken, validateQuery(vector), getVectorDiagramDataCalculation)
     
