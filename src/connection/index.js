@@ -4,18 +4,18 @@ const { serialPort } = require('../server/utils/serialport')
 
 module.exports.getDataFromMiddleware = async (sendMessage, realTime) => {
     try {
-        while (true) {
-            const meters = await meterModel.find()
-            for (let i in meters) {
-                let parameterIds = []
-                meters[i].parameters?.map(param => {
-                    if (param.status == 'active') {
-                        parameterIds.push("'" + param.channel_full_id + "'")
-                    }
-                })
-                await checkDate(meters[0], parameterIds, sendMessage, realTime).then(console.log)
-            }
-        }
+        // while (true) {
+        //     const meters = await meterModel.find()
+        //     for (let i in meters) {
+        //         let parameterIds = []
+        //         meters[i].parameters?.map(param => {
+        //             if (param.status == 'active') {
+        //                 parameterIds.push("'" + param.channel_full_id + "'")
+        //             }
+        //         })
+        //         await checkDate(meters[0], parameterIds, sendMessage, realTime).then(console.log)
+        //     }
+        // }
     } catch (err) {
         console.log(err);
     }
