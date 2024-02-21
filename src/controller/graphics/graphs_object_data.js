@@ -4,7 +4,7 @@ const { sortvalueObjectsForGraphObjectArchive, sortvalueObjectsForGraphObjectCur
 
 module.exports.getGraphsAndObjectDataArchive = async(req, res) => {
     try {
-        const { id } = req.id
+        const { id } = req.params
         const archiveQuery = req.data
 
         let resultArchive = new Map()
@@ -22,7 +22,7 @@ module.exports.getGraphsAndObjectDataArchive = async(req, res) => {
 
 module.exports.getGraphsAndObjectCurrent = async(req, res) => {
     try {
-        const { id } = req.id
+        const { id } = req.params
         const currentQuery = req.data
 
         let resultCurrent = new Map()
@@ -40,7 +40,7 @@ module.exports.getGraphsAndObjectCurrent = async(req, res) => {
 
 module.exports.getGraphsAndObjectDataCalculationArchive = async(req, res) => {
     try {
-        const { id } = req.id
+        const { id } = req.params
         const archiveQuery = req.data
 
         let resultArchive = new Map()
@@ -58,7 +58,7 @@ module.exports.getGraphsAndObjectDataCalculationArchive = async(req, res) => {
 
 module.exports.getGraphsAndObjectDataCalculationCurrent = async(req, res) => {
     try {
-        const { id } = req.id
+        const { id } = req.params
         const currentQuery = req.data
 
         let resultCurrent = new Map()
