@@ -6,8 +6,7 @@ module.exports.getGraphDataList = async(req, res) => {
     try {
         const { id }= req.params
         const args = req.data
-        const query = { ...args.query, type: args.type, limit:args.limit, finishDate: args.date1, startDate: args.date2 }
-
+        const query = { ...args, type: args.type, limit:args.limit, finishDate: args.date2, startDate: args.date1 }
         const dataListDocuments = await repositories().electObjectRepository().findOneAndDataList(id, query)
         let result = new Map()
         if (dataListDocuments) result = await sortvalueObjectsForList(dataListDocuments.parameters, dataListDocuments.type)
@@ -24,7 +23,7 @@ module.exports.getGraphDataListCalculation = async(req, res) => {
     try {
         const { id }= req.params
         const args = req.data
-        const query = { ...args.query, type: args.type, limit:args.limit, finishDate: args.date1, startDate: args.date2 }
+        const query = { ...args, type: args.type, limit:args.limit, finishDate: args.date2, startDate: args.date1 }
         
         const dataListDocuments = await repositories().calculationObjectRepository().findOneAndDataList(id, query)
         let result = new Map()

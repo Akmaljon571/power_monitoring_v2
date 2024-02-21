@@ -75,7 +75,7 @@ module.exports.parameterRepository = () => {
         try {
             let parameterIds = []
             const newParams = args.map((el) => {
-                let stringParamName = "'" + el.channel_full_id + "'"
+                let stringParamName = `${el.channel_full_id}`
                 parameterIds.push(stringParamName)
                 return {
                     meter: meter._id,

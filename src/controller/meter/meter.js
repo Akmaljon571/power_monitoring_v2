@@ -43,7 +43,6 @@ module.exports.createMeter = async(req, res) => {
             await repositories().folderObjectRepository().insert(folderParameter)
             await repositories().parameterRepository().insert(args.parameters, newMeterDocument)
             await repositories().previousObjectRepository().insert(newMeterDocument)
-
         } else if (args.meter_form === "uspd") {
             let meter_param = {
                 name: args.name,
@@ -65,16 +64,17 @@ module.exports.createMeter = async(req, res) => {
                 meter: newMeterDocument._id
             }
             await repositories().folderObjectRepository().insert(folderParameter)
-
             await repositories().parameterRepository().insert(args.parameters, newMeterDocument)
-            await repositories().previousObjectRepository().create(newMeterDocument)
+            await repositories().previousObjectRepository().insert(newMeterDocument)
         } else {
+            console.log('ERROR')
             throw new CustomError(400, "undefined type")
         }
 
-        startMiddleware('run-app')
+        // startMiddleware('run-app')
         res.status(201).json({ status: 201, error: null, data: "Succesfull saved" })
     } catch (err) {
+        console.log(err)
         res.json(new CustomError(err.status, err.message))
     }
 }

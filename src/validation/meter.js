@@ -54,7 +54,7 @@ module.exports.createMeterJoi = Joi.object({
    id: Joi.string().required(),
    ip_address: Joi.string().required(),
    meter_form: Joi.valid(...meter_form).required(),
-   meter_type: Joi.valid(...meter_type).required(),
+   meter_type: Joi.required(),
    name: Joi.string().required(),
    number_meter: Joi.string().required(),
    password: Joi.string().required(),
@@ -78,9 +78,9 @@ module.exports.createMeterJoi = Joi.object({
 
    parameters: Joi.array().items(
       Joi.object({
-         channel_full_id: Joi.valid(...channelFullIdNameList).required(),
+         channel_full_id: Joi.required(),
          param_name: Joi.string().required(),
-         param_short_name: Joi.valid(...parameterShortNamesList).required(),
+         param_short_name: Joi.required(),
          parameter_type: Joi.valid(...parameter_type).required(),
          status: Joi.valid(...status).required(),
          text: Joi.string().optional().allow('')

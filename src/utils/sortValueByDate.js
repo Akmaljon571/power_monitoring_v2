@@ -157,7 +157,6 @@ module.exports.sortvalueObjectsForList = async (parameters, type) => {
         for (let parameter of parameters) {
             for (let valueObject of parameter.parameter_values) {
                 if (result.has(new Date(valueObject.date).getTime())) {
-                    //multiply values to TC and TT or unit
                     if(type === 'feeder') {
                         valueObject = multiplyTcAndTT(parameter.multiply, parameter.param_details.param_short_name, valueObject)
                     }
@@ -186,7 +185,6 @@ module.exports.sortvalueObjectsForList = async (parameters, type) => {
                                 }
                             }
                         }
-                        //  dateObject[parameter.param_details[0].param_short_name].value = dateObject[parameter.param_details[0].param_short_name].value + value
                     } else {
                         if (valueObject.tariff && valueObject.tariff !== 0) {
                             dateObject[parameter.param_details.param_short_name] = {
@@ -225,9 +223,7 @@ module.exports.sortvalueObjectsForList = async (parameters, type) => {
 
                         }
                     }
-
                     result.set(new Date(valueObject.date).getTime(), paramObject)
-
                 }
             }
         }

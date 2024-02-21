@@ -4,28 +4,28 @@ const { channelFullIdNameList_enum, parameterShortNamesList_enum, status_enum, p
 const parameterSchema = new mongoose.Schema({
     param_meter_type:{
         type:String,
-        enum:["meter","uspd"],
+        // enum:["meter","uspd"],
         required:true
     },
     status:{
         type:String,
-        enum: status_enum,
+        // enum: status_enum,
         default:"active"
     },
     channel_full_id:{
         type:String,
         required:true,
-        enum: channelFullIdNameList_enum
+        // enum: channelFullIdNameList_enum
     },
     parameter_type:{
         type:String,
-        enum: parameter_type_enum,
+        // enum: parameter_type_enum,
         required:true,
     },
     param_short_name:{
        type:String,
        required:true,
-       enum: parameterShortNamesList_enum
+    //    enum: parameterShortNamesList_enum
     },
     param_name:{
         type:String

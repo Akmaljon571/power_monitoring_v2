@@ -8,7 +8,7 @@ const meterSchema = new mongoose.Schema({
     },
     status:{
         type:String,
-        enum:["active","inactive"],
+        // enum:["active","inactive"],
         default:"active"
     },
     // folder:{
@@ -21,16 +21,16 @@ const meterSchema = new mongoose.Schema({
     // },
     attached:{
        type:String,
-       enum:["0","1"],
+    //    enum:["0","1"],
        default:"0"
     },
     meter_type:{
         type:String,
-        enum:meter_type_enum
+        // enum:meter_type_enum
     },
     meter_form:{
         type:String,
-        enum:meter_form_enum
+        // enum:meter_form_enum
     },
     number_meter:{
         type:String
@@ -43,7 +43,7 @@ const meterSchema = new mongoose.Schema({
     },
     connection_channel:{
         type:String,
-        enum:connection_channel_enum
+        // enum:connection_channel_enum
     },
     ip_address:{
         type:String
@@ -74,7 +74,7 @@ const meterSchema = new mongoose.Schema({
     },
     period_type:{
         type:String,
-        enum:period_type_enum
+        // enum:period_type_enum
     },
     days_of_month:{
         type:[Number]

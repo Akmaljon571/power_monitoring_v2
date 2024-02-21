@@ -728,8 +728,7 @@ module.exports.electObjectRepository = () => {
     async function findOneAndDataList(id, query) {
         try {
             let modelname = 'parameter_values'
-            let existList = query.selectedParameters ? query.selectedParameters : ["energytotal_A+", "energytotal_A-", "energytotal_R+", "energytotal_R-"]
-            
+            let existList = query.selectedParameters ? JSON.parse(query.selectedParameters) : ["energytotal_A+", "energytotal_A-", "energytotal_R+", "energytotal_R-"]
             if (query.type === "current") {
                 modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
             }
