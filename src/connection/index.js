@@ -1,32 +1,12 @@
-const http = require('http')
-const { Server } = require('socket.io')
 const { repositories } = require('../repository')
 const { serialPort } = require('../server/utils/serialport/serialport')
-// const { sendMessageFN, realTimeFN } = require('../web/socket')
 const { previousCheking } = require('./previous')
 const { requestBilling, requestArchive, requestDateTime, requestCurrent } = require('./request')
-
-const server = http.createServer();
-const io = new Server(server, {
-    cors: {
-        origin: "*",
-        method: ["*"],
-    },
-});
 
 let bool = true
 let clear
 
-const sendMessage = (id, status, where) => {
-    console.log(id, status, where)
-    io.emit("send_message", { id, status });
-}
-const realTime = (data) => {
-    console.log(data, "real-time")
-    io.emit("real-time", { data });
-}
-
-module.exports.startMiddleware = async (status) => {
+module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     if (status === 'run-app') {
         bool = false
         clearInterval(clear)
@@ -34,10 +14,10 @@ module.exports.startMiddleware = async (status) => {
     }
 
     bool = true
-    await getDataFromMiddleware()
+    await getDataFromMiddleware(sendMessage, realTime)
 }
 
-const getDataFromMiddleware = async () => {
+const getDataFromMiddleware = async (sendMessage, realTime) => {
     try {
         if (bool) {
             const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "current" } })
@@ -48,8 +28,8 @@ const getDataFromMiddleware = async () => {
                         parameterIds.push(`${param.channel_full_id}`)
                     }
                 })
-                await checkDate(meters[0], parameterIds).then(async (res) => {
-                    await getDataFromMiddleware()
+                await checkDate(meters[0], parameterIds, sendMessage, realTime).then(async (res) => {
+                    await getDataFromMiddleware(sendMessage, realTime)
                 })
             }
         }
@@ -58,7 +38,7 @@ const getDataFromMiddleware = async () => {
     }
 }
 
-const checkDate = async (meter, parameterIds,) => {
+const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
     return new Promise(async (resolve, reject) => {
         try {
             const chech_date_fn = async () => {
@@ -67,7 +47,7 @@ const checkDate = async (meter, parameterIds,) => {
                 const newJournalDocument = await repositories().journalRepository().insert(journalParameter)
 
                 if (!meter.time_difference) {
-                    await archiveData(meter, parameterIds, newJournalDocument._id).then((res) => {
+                    await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime).then((res) => {
                         console.log(res)
                         resolve({ txt: 'no time given', meter: meter.meter_type })
                     })
@@ -87,7 +67,7 @@ const checkDate = async (meter, parameterIds,) => {
                 if ((result / 1000) <= meter.time_difference) {
                     console.log('date o`tdi')
                     sendMessage(meter._id, 'end', 'date')
-                    await archiveData(meter, parameterIds, newJournalDocument._id)
+                    await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime)
                         .then((res) => {
                             console.log(res)
                             resolve('ok')
@@ -118,7 +98,7 @@ const checkDate = async (meter, parameterIds,) => {
     });
 };
 
-const archiveData = async (meter, parameterIds, journalId) => {
+const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime) => {
     return new Promise(async (resolve, reject) => {
         try {
             const checkTime = await repositories().parameterValueRepository().findTodayList(new Date())
@@ -129,7 +109,7 @@ const archiveData = async (meter, parameterIds, journalId) => {
 
             if (last_add_time - new Date() > 0) {
                 sendMessage(meter._id, 'end', 'archive')
-                await billingData(meter, parameterIds).then((res) => {
+                await billingData(meter, parameterIds, sendMessage, realTime).then((res) => {
                     console.log(res)
                     resolve('next')
                 })
@@ -180,7 +160,7 @@ const archiveData = async (meter, parameterIds, journalId) => {
 
             console.log(valuesList.length, 'valueList Archive')
             sendMessage(meter._id, 'end', 'archive')
-            await billingData(meter, parameterIds).then(async () => {
+            await billingData(meter, parameterIds, sendMessage, realTime).then(async () => {
                 await repositories().parameterValueRepository().insert(false, valuesList)
                 await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
             }).finally(() => {
@@ -194,13 +174,13 @@ const archiveData = async (meter, parameterIds, journalId) => {
     })
 }
 
-const billingData = async (meter, parameterIds) => {
+const billingData = async (meter, parameterIds, sendMessage, realTime) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (await repositories().billingRepository().findToday(meter._id)) {
                 console.log('billing ketdi')
                 sendMessage(meter._id, 'end', 'billing')
-                await currentData(meter, parameterIds).then(() => {
+                await currentData(meter, parameterIds, sendMessage, realTime).then(() => {
                     resolve('next')
                 })
                 return
@@ -250,7 +230,7 @@ const billingData = async (meter, parameterIds) => {
             console.log(valueList.length, 'valueList billing')
             sendMessage(meter._id, 'end', 'billing')
 
-            await currentData(meter, parameterIds).then(async () => {
+            await currentData(meter, parameterIds, sendMessage, realTime).then(async () => {
                 await repositories().billingRepository().insert(valueList)
             }).finally(() => {
                 resolve('ok')
@@ -263,7 +243,7 @@ const billingData = async (meter, parameterIds) => {
     })
 }
 
-const currentData = async (meter, list) => {
+const currentData = async (meter, list, sendMessage, realTime) => {
     return new Promise(async (resolve, reject) => {
         let journalParameter = {
             meter: meter._id,
@@ -279,19 +259,18 @@ const currentData = async (meter, list) => {
 
         const date = new Date()
         const modelDate = "" + date.getFullYear() + date.getMonth()
-        const realTimeData = { "positiveA": 0, "positiveR": 0, "negativeA": 0, "negativeR": 0 }
+        const realTimeData = { date: new Date(), "AP": "0", "RP": "0", "FP": "0", "CP": "0" }
         const valueList = []
-        console.log(data)
         for (let i = 0; i < list.length; i++) {
             let parameter = await repositories().parameterRepository().findOne({ channel_full_id: list[i], meter: meter._id })
-            if (list[i] == "1.0.0") {
-                realTimeData.positiveA = data[i][list[i]]
-            } else if (list[i] == "1.1.0") {
-                realTimeData.positiveR = data[i][list[i]]
-            } else if (list[i] == "1.2.0") {
-                realTimeData.negativeA = data[i][list[i]]
-            } else if (list[i] == "1.3.0") {
-                realTimeData.negativeR = data[i][list[i]]
+            if (list[i] == "1.8.3") {
+                realTimeData.AP = data[i][list[i]]
+            } else if (list[i] == "1.9.3") {
+                realTimeData.RP = data[i][list[i]]
+            } else if (list[i] == "1.10.3") {
+                realTimeData.FP = data[i][list[i]]
+            } else if (list[i] == "1.13.3") {
+                realTimeData.CP = data[i][list[i]]
             }
 
             if (parameter) {
@@ -301,7 +280,6 @@ const currentData = async (meter, list) => {
                 console.log('parameter not found')
             }
         }
-        console.log(realTimeData, '2')
 
         await repositories().parameterValueRepository().insert(modelDate, valueList).then(async () => {
             realTime(realTimeData)

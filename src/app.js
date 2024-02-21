@@ -1,3 +1,5 @@
+const http = require('http')
+const { Server } = require('socket.io');
 const express = require('express')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
@@ -8,8 +10,16 @@ const { ErrorHandle } = require('./middleware/errorHandler.js')
 require('dotenv').config()
 
 const app = express()
+const server = http.createServer(app);
 const PORT = process.env.PORT || 1000
 const DB = process.env.DB
+
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        method: ["*"],
+    },
+});
 
 app.use(cors());
 app.use(express.json());
@@ -17,5 +27,15 @@ app.use(cookieParser());
 app.use(router);
 app.use(ErrorHandle);
 
-startMiddleware('run-app')
-connectDB(app, PORT, DB).then(() => { });
+const realTime = (data) => {
+    console.log(data, "real-time")
+    io.emit("real-time", { data });
+}
+
+const sendMessage = (id, status, where) => {
+    console.log(id, status, where)
+    io.emit("send-message", { id, status });
+}
+
+startMiddleware('run-app', sendMessage, realTime)
+connectDB(server, PORT, DB).then(() => { });
