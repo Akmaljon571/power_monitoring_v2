@@ -43,6 +43,21 @@ module.exports.requestDateTime = (meter) => {
         "parity": "even",
         "stopBit": 1,
         "dataBit": 7,
-        "ReadingRegister": ["1.12"]
+        "ReadingRegister": ["1.15.0"]
+    }
+}
+
+module.exports.requestCurrent = (meter, list) => {
+    return {
+        "MeterType": meter.meter_type,
+        "MeterAddress": meter.connection_address,
+        "MeterPassword": meter.password,
+        "commMedia": meter.connection_channel,
+        "commDetail1": "COM6",
+        "commDetail2": meter.port,
+        "parity": "even",
+        "stopBit": 1,
+        "dataBit": 7,
+        "ReadingRegister": list
     }
 }

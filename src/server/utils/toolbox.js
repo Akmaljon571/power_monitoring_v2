@@ -3,9 +3,11 @@ const { queries } = require('../queries')
 function getRequestCommandFromJson(argument, type) {
 	const queriesOfType = queries[type] || [];
 	if (!Object.keys(queriesOfType).length) return {};
+	let [arg, key] = argument.split(',')
+	
 	let dataR = {};
 	let dataY = '';
-	let data = argument.split('.');
+	let data = arg.split('.');
 	let dataKey = '';
 	for (let i = 0; i < data.length; i++) {
 		if (dataY.length > 0) {
@@ -21,9 +23,10 @@ function getRequestCommandFromJson(argument, type) {
 		}
 	}
 	if (type.includes('CE')) {
+		key = key ? `${arg},${key}` : argument
 		return ['hashedPassword', 'version'].includes(dataKey) ?
-		{ [dataKey]: dataR, crc: false } :
-		{ [dataKey]: dataR };
+		{ [`${key}_${dataKey}`]: dataR, crc: false } :
+		{ [`${key}_${dataKey}`]: dataR };
 	} else {
 		return { [dataKey]: dataR };
 	}

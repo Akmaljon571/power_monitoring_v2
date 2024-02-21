@@ -1,6 +1,6 @@
 const { Socket } = require('net');
 const { InterByteTimeoutParser } = require('@serialport/parser-inter-byte-timeout');
-const { queryMaker, checkCrcIs } = require('./crc.js');
+const { queryMaker, checkCrcIs } = require('../crc.js');
 
 const socket = new Socket();
 
@@ -11,7 +11,7 @@ const openPort = (port) => {
                 if (err) {
                     reject(err.message || 'connection error'); 
                 } else {
-                    resolve();
+                    resolve()
                 }
             });
         } else {
@@ -61,6 +61,7 @@ const closePort = (port) => {
                     resolve();
                 }
             });
+            port.removeAllListeners('end')
         } else {
             socket.end(err => {
                 if (err) {
@@ -69,16 +70,19 @@ const closePort = (port) => {
                     resolve();
                 }
             });
+            socket.removeAllListeners('end')
         }
-        port.removeAllListeners('end')
-
     });
 };
 
 const waitForData = (port, timeout = 1600) => {
     return new Promise((resolve, reject) => {
         const dataHandler = data => {
-            port.removeAllListeners('data')
+            if (!checkTCPConnection(port)) {
+                port.removeAllListeners('data')
+            } else {
+                socket.removeAllListeners('data')
+            }
             resolve(data)
         };
         if (!checkTCPConnection(port)) {
@@ -112,7 +116,7 @@ async function serialPortEngine(command, port, meterType) {
         let key = Object.keys(command)[0];
         let dataReq = queryMaker([...Object.values(command)[0]], meterType, command.crc);
         // console.log(key, dataReq);
-        if (key == 'closeCommand') {
+        if (key == '0.3_closeCommand') {
             await writeToPort(dataReq, port);
             return { key, data: null };
         }

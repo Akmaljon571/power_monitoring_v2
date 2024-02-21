@@ -1,19 +1,19 @@
-const { Validation } = require('../validation/validation.js')
+const { Validation } = require('../../validation/validation.js')
 
 const { SerialPort } = require('serialport')
 const { setConfig, openPort, closePort, serialPortEngine } = require('./serialport_config.js')
 
-const ObisQuery = require('./obis_results/index.js')
-const { dateConvertor, getDaysArray } = require('./dateUtils.js')
+const ObisQuery = require('../obis_results/index.js')
+const { dateConvertor, getDaysArray } = require('../dateUtils.js')
 
-const { getEnergomeraResult } = require('./result_convertors/energomera_result_convertor.js')
-const { getMercuryResult } = require('./result_convertors/mercury_result_convertor.js')
-const { getTE_73Result } = require('./result_convertors/TE_73CAS.js')
+const { getEnergomeraResult } = require('../result_convertors/energomera_result_convertor.js')
+const { getMercuryResult } = require('../result_convertors/mercury_result_convertor.js')
+const { getTE_73Result } = require('../result_convertors/TE_73CAS.js')
 
 
 
-let allowParametres = ['hashedPassword', 'password', 'version']
-let versionAllowed = ['hashedPassword', 'password']
+let allowParametres = ['0.1_hashedPassword', '0.2_password', '0.0_version']
+let versionAllowed = ['0.1_hashedPassword', '0.2_password']
 let onlyVerionAllow = ['version', 'password']
 
 async function getCounterResult(data) {
@@ -23,7 +23,7 @@ async function getCounterResult(data) {
         
         const port = setUp?.connectionType === 1 ? tcpConnection : setUp?.connectionType === 0 ? new SerialPort(serialPort) : undefined
         port.once('error', (error) => reject(error.message || 'error while reading data!'))
-
+        
         if (!port) throw new Error('commMedia is not valid')
         let type = setUp.meterType.split('_')
         
@@ -31,48 +31,23 @@ async function getCounterResult(data) {
         const startCommands = ObisQuery[`${type[0]}_Counter_Query`](null, setUp)
         
         if (checkCounterExist('CE', setUp)) {
-            let autoReadingBuffer = []
             for(let i of getCommands) {
-                if (getObjectKeyValue(i) === 'autoReading') {
-                    for (const j of i.autoReading) {
-                        if (!getObjectKeyValue(j, 'value')?.length) {
-                            continue
-                        } else {
-                            startCommands.splice(3,0,j)
-                            await openPort(port)
-                            for (let k of startCommands) {
-                                let { data, key } = await serialPortEngine(k, port)
-                                if (data && !allowParametres.includes(key)) {
-                                    autoReadingBuffer.push({ key, data })
-                                } else if (key === 'version') {
-                                    let resValue = getEnergomeraResult(data,key)
-                                    if (resValue.version && !resValue.version.includes(type.join(''))) {
-                                        throw new Error('connection error check parameters')
-                                    }
-                                }
-                            }
-                            startCommands.splice(3,1)
-                            await closePort(port)
+                startCommands.splice(3,0,i)
+                await openPort(port)
+                for (let j of startCommands) {
+                    let { data, key } = await serialPortEngine(j, port)
+                    if (data && !versionAllowed.includes(key)) {
+                        let resValue = getEnergomeraResult(data,key)
+                        if (resValue.version && !resValue.version.includes(type.join(''))) {
+                            throw new Error('connection error check parameters')
+                        } else if (key.split('_')[1] != 'version') {
+                            result.push(resValue)
                         }
                     }
-                    result.push(getEnergomeraResult(autoReadingBuffer, 'cAutoReading'))
-                } else {
-                    startCommands.splice(3,0,i)
-                    await openPort(port)
-                    for (let j of startCommands) {
-                        let { data, key } = await serialPortEngine(j, port)
-                        if (data && !versionAllowed.includes(key)) {
-                            let resValue = getEnergomeraResult(data,key)
-                            if (resValue.version && !resValue.version.includes(type.join(''))) {
-                                throw new Error('connection error check parameters')
-                            } else if (key != 'version') {
-                                result.push(resValue)
-                            }
-                        }
-                    }
-                    startCommands.splice(3,1)
-                    await closePort(port)
                 }
+                
+                startCommands.splice(3,1)
+                await closePort(port)
             }
         } else if (checkCounterExist('Mercury', setUp)) {
             for(let i of getCommands) {
@@ -108,7 +83,8 @@ async function getCounterResult(data) {
         }
         return result
     } catch (error) {
-        console.log(`Error in getCounterResult function: ${error}`)
+        console.log(error.message)
+        throw new Error(`Error in getCounterResult function: ${error.message}`)
     }
 }
 
@@ -119,7 +95,7 @@ async function getLstCounterResult(data) {
         const { setUp, serialPort } = setConfig(data)
         const port = new SerialPort(serialPort)
         port.once('error', (error) => reject(error.message || 'error while reading data!'))
-
+        
         let type = setUp.meterType.split('_')
         
         const getCommands = ObisQuery[`${type[0]}_Counter_Query`](data.ReadingRegister, setUp, 'obis')
@@ -129,7 +105,7 @@ async function getLstCounterResult(data) {
         let lstResult
         let lstResultIndex
         let getValue = []
-        
+
         if (checkCounterExist('CE', setUp)) {
             if (checkCounterExist(type[1], '308')) {
                 const lstCommands = ObisQuery[`${type[0]}_Counter_Query`](null, setUp, 'lst')
@@ -140,7 +116,7 @@ async function getLstCounterResult(data) {
                         let resValue = getEnergomeraResult(data,key)
                         if (resValue.version && !resValue.version.includes(type.join(''))) {
                             throw new Error('connection error check parameters')
-                        } else if (key != 'version') {
+                        } else if (key.split('_')[1] != 'version') {
                             lstResult=resValue
                         }
                         
@@ -148,6 +124,7 @@ async function getLstCounterResult(data) {
                     }
                 }
                 await closePort(port)
+                
                 lstResultIndex = dateConvertor(lstReq, lstResult.lst).index
                 if (!lstResultIndex.length) { return [] }
                 

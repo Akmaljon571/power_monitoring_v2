@@ -2,10 +2,10 @@ const http = require('http')
 const { Server } = require('socket.io')
 const { meterModel } = require('../models')
 const { repositories } = require('../repository')
-const { serialPort } = require('../server/utils/serialport')
+const { serialPort } = require('../server/utils/serialport/serialport')
 const { sendMessageFN, realTimeFN } = require('../web/socket')
 const { previousCheking } = require('./previous')
-const { requestBilling, requestArchive, requestDateTime } = require('./request')
+const { requestBilling, requestArchive, requestDateTime, requestCurrent } = require('./request')
 
 const server = http.createServer();
 const io = new Server(server, {
@@ -45,7 +45,7 @@ const getDataFromMiddleware = async () => {
                         }
                     })
 
-                    checkDate(meters[0], parameterIds).then(console.log)
+                    await checkDate(meters[0], parameterIds).then(console.log)
                 }
             }, 15000)
         }
@@ -72,9 +72,9 @@ const checkDate = async (meter, parameterIds,) => {
 
                 const requestString = requestDateTime(meter)
                 const data = await serialPort(requestString)
-                
-                const time = data[0]?.currentDate?.split(' ')[0]
-                const date = data[0]?.currentDate?.split('/')[1].split('.').reverse()
+
+                const time = data[0]?.['1.15.0']?.split(' ')[0]
+                const date = data[0]?.['1.15.0']?.split('/')[1].split('.').reverse()
                 date[0] = '' + 20 + date[0]
                 const datatime = new Date(...date.concat(time.split(':')))
                 datatime.setMonth(datatime.getMonth() - 1)
@@ -196,8 +196,10 @@ const billingData = async (meter, parameterIds) => {
             if (await repositories().billingRepository().findToday(meter._id)) {
                 console.log('billing ketdi')
                 sendMessage(meter._id, 'end', 'billing')
-                //   await currentData(meter, parameterIds)
-                return resolve('next')
+                await currentData(meter, parameterIds).then(() => {
+                    resolve('next')
+                })
+                return
             }
             const yesterday = new Date();
             yesterday.setUTCHours(0, 0, 0, 0)
@@ -244,12 +246,11 @@ const billingData = async (meter, parameterIds) => {
             console.log(valueList.length, 'valueList billing')
             sendMessage(meter._id, 'end', 'billing')
 
-            // await currentData(meter, parameterIds, sendMessage).then(() => {
-            await repositories().billingRepository().insert(valueList).then(() => {
+            await currentData(meter, parameterIds).then(async () => {
+                await repositories().billingRepository().insert(valueList)
+            }).finally(() => {
                 resolve('ok')
             })
-            // }).finally(() => {
-            // })
         } catch (error) {
             console.log(error)
             sendMessage(meter._id, 'Error', 'billing')
@@ -258,173 +259,47 @@ const billingData = async (meter, parameterIds) => {
     })
 }
 
+const currentData = async (meter, list1) => {
+    return new Promise(async (resolve, reject) => {
+        let journalParameter = {
+            meter: meter._id,
+            request_type: "current",
+            status: "sent"
+        }
+        sendMessage(meter._id, 'send', 'current')
+        let newJournalDocument = await repositories().journalRepository().insert(journalParameter)
 
-// realTime({
-//     "active-power_total": 0,
-//     "full-power_total": 0,
-//     "reactive-power_total": 0,
-//     "coef-active-power_total": 0,
-// })
-// sendMessage(meter._id, 'end')
+        const list = ["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0"]
+        const requestString = requestCurrent(meter, list)
+        const data = await serialPort(requestString)
 
-// const currentData = async (meter, parameterIds, sendMessage) => {
-//     return new Promise(async (resolve, reject) => {
-//         let request;
-//         let journalParameter = {
-//             meter: meter._id,
-//             request_type: "current",
-//             status: "sent"
-//         }
-//         let newJournalDocument = await repositories().journalRepository().insert(journalParameter)
-//         // const journalId = newJournalDocument._id
-//         const requestString = {
-//             "MeterType": meter.meter_type,
-//             "MeterAddress": meter.connection_address,
-//             "MeterPassword": meter.password,
-//             "commMedia": meter.connection_channel,
-//             "commDetail1": "COM6",
-//             "commDetail2": meter.port,
-//             "parity": "even",
-//             "stopBit": 1,
-//             "dataBit": 7,
-//             "ReadingRegister": ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "1.10", "1.11"]
-//         }
-//         const data = await serialPort(requestString)
-//         console.log(data, ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8", "1.9", "1.10", "1.11"])
-//     //     let currentDate = new Date()
-//     //     let activePowerCounter = 0, reactivePowerCounter = 0, fullPowerCounter = 0, coefActivePowerCounter = 0
-//     //     let totals = { "active_power_total": { value: 0, exist: false }, reactive_power_total: { value: 0, exist: false }, full_power_total: { value: 0, exist: false }, coef_active_total: { value: 0, exist: false } }
+        const date = new Date()
+        const modelDate = "" + date.getFullYear() + date.getMonth()
+        const realTimeData = {"positiveA": 0, "positiveR": 0, "negativeA": 0, "negativeR": 0}
 
-//     //     client.on("data", async (data) => {
-//     //         await sendMessage(meter._id, 'end')
-//     //         const buf = Buffer.from(data);
-//     //         const json = JSON.parse(buf.toString('utf8'));
-//     //         console.json(json)
-//     //         if (json.result === 1) {
-//     //             let parameter = await repositories().parameterRepository().findOne({ channel_full_id: json.name, meter: meter._id })
-//     //             if (!parameter || parameter.param_short_name) { console.log("parameter not found") }
+        list.map(async (e, i) => {
+            let parameter = await repositories().parameterRepository().findOne({ channel_full_id: e, meter: meter._id })
+            if (e == "1.0.0") {
+                realTimeData.positiveA += data[i][e]
+            } else if (e == "1.1.0") {
+                realTimeData.positiveR += data[i][e]
+            } else if (e == "1.2.0") {
+                realTimeData.negativeA += data[i][e]
+            } else if (e == "1.3.0") {
+                realTimeData.negativeR += data[i][e]
+            }
 
-//     //             switch (parameter.param_short_name) {
-//     //                 case "active-power_A":
-//     //                 case "active-power_B":
-//     //                 case "active-power_C": {
-//     //                     totals.active_power_total.value = totals.active_power_total.value + json.value
-//     //                     totals.active_power_total.exist = true
-//     //                     activePowerCounter++;
-//     //                     break;
-//     //                 }
-//     //                 case "reactive-power_A":
-//     //                 case "reactive-power_B":
-//     //                 case "reactive-power_B": {
-//     //                     totals.reactive_power_total.value = totals.reactive_power_total.value + json.value
-//     //                     totals.reactive_power_total.exist = true
-//     //                     reactivePowerCounter++;
-//     //                     break;
-//     //                 }
-//     //                 case "full-power_A":
-//     //                 case "full-power_B":
-//     //                 case "full-power_C": {
-//     //                     totals.full_power_total.value = totals.full_power_total.value + json.value
-//     //                     totals.full_power_total.exist = true
-//     //                     fullPowerCounter++;
-//     //                     break;
-//     //                 }
-//     //                 case "coef-active-power_A":
-//     //                 case "coef-active-power_B":
-//     //                 case "coef-active-power_C": {
-//     //                     totals.coef_active_total.value = totals.coef_active_total.value + json.value
-//     //                     totals.coef_active_total.exist = true
-//     //                     coefActivePowerCounter++;
-//     //                     break;
-//     //                 }
-//     //             }
+            if (parameter) {
+                const result = { value: data[i][e], date, parameter: parameter._id }
+                await repositories().parameterValueRepository().insert(modelDate, result)
+            } else {
+                console.log('parameter not found')
+            }
+        })
 
-//     //             let modelDate = "" + currentDate.getFullYear() + currentDate.getMonth()
-//     //             let value = { value: json.value, date: currentDate, parameter: parameter._id }
-//     //             if (meter.meter_type == 'TE73') {
-//     //                 switch (parameter.param_short_name) {
-//     //                     case "current_A":
-//     //                     case "current_B":
-//     //                     case "current_C":
-//     //                         value.value /= 100
-//     //                         break;
-//     //                 }
-//     //                 switch (parameter.param_short_name) {
-//     //                     case "coef-active-power_A":
-//     //                     case "coef-active-power_B":
-//     //                     case "coef-active-power_C":
-//     //                         value.value /= 10
-//     //                         break;
-//     //                 }
-//     //             }
-
-//     //             if (activePowerCounter === 3) {
-//     //                 let totalParameter = await repositories().parameterRepository().findOne({ param_short_name: "active-power_total", meter: meter._id })
-
-//     //                 if (!totalParameter) {
-//     //                     console.log("parameter not found")
-//     //                 } else {
-//     //                     let totalValue = { value: totals.active_power_total.value, date: currentDate, parameter: totalParameter._id }
-//     //                     await repositories().parameterValueRepository().insert(modelDate, { ...totalValue })
-//     //                 }
-//     //                 activePowerCounter = 0
-//     //             }
-
-//     //             if (reactivePowerCounter === 3) {
-//     //                 let totalParameter = await repositories().parameterRepository().findOne({ param_short_name: "reactive-power_total", meter: meter._id })
-
-//     //                 if (!totalParameter) {
-//     //                     console.log("parameter not found")
-//     //                 } else {
-//     //                     let totalValue = { value: totals.reactive_power_total.value, date: currentDate, parameter: totalParameter._id }
-//     //                     await repositories().parameterValueRepository().insert(modelDate, { ...totalValue })
-//     //                 }
-//     //                 reactivePowerCounter = 0
-//     //             }
-
-//     //             if (fullPowerCounter === 3) {
-//     //                 let totalParameter = await repositories().parameterRepository().findOne({ param_short_name: "full-power_total", meter: meter._id })
-
-//     //                 if (!totalParameter) {
-//     //                     console.log("parameter not found")
-//     //                 } else {
-//     //                     let totalValue = { value: totals.full_power_total.value, date: currentDate, parameter: totalParameter._id }
-//     //                     await repositories().parameterValueRepository().insert(modelDate, { ...totalValue })
-//     //                 }
-//     //                 fullPowerCounter = 0
-//     //             }
-
-//     //             if (coefActivePowerCounter === 3) {
-//     //                 let totalParameter = await repositories().parameterRepository().findOne({ param_short_name: "coef-active-power_total", meter: meter._id })
-
-//     //                 if (!totalParameter) {
-//     //                     console.log("parameter not found")
-//     //                 } else {
-//     //                     let totalValue = { value: totals.coef_active_total.value, date: currentDate, parameter: totalParameter._id }
-//     //                     await repositories().parameterValueRepository().insert(modelDate, { ...totalValue })
-//     //                 }
-//     //                 coefActivePowerCounter = 0
-//     //             }
-
-//     //             if (request == 'sent') {
-//     //                 request = 'end'
-//     //                 console.log(meter._id, 'succeed')
-//     //                 await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
-//     //             }
-
-//     //             removeListeners('CurrentData 1st ---')
-//     //             await repositories().parameterValueRepository().insert(modelDate, { ...value })
-//     //             resolve(data)
-//     //         } else {
-//     //             if (request == 'sent') {
-//     //                 console.log(meter._id, 'failed')
-//     //                 await repositories().journalRepository().update({ _id: journalId, status: "failed" })
-//     //             }
-
-//     //             removeListeners('CurrentData last ---')
-//     //             await sendMessage(meter._id, "Error")
-//     //             resolve('finish')
-//     //         }
-//     //     })
-//     })
-// }
+        realTime(realTimeData)
+        await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "succeed" })
+        sendMessage(meter._id, "end", 'current')
+        resolve('ok')
+    })
+}

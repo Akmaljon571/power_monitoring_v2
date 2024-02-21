@@ -1,5 +1,5 @@
 const { repositories } = require("../repository");
-const { serialPort } = require("../server/utils/serialport");
+const { serialPort } = require("../server/utils/serialport/serialport");
 const { requestBilling, requestArchive } = require("./request");
 
 const yesterday = new Date();
