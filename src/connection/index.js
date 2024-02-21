@@ -4,8 +4,8 @@ const { meterModel } = require('../models')
 const { repositories } = require('../repository')
 const { serialPort } = require('../server/utils/serialport')
 const { sendMessageFN, realTimeFN } = require('../web/socket')
-const { previousCheking, filterPrevious } = require('./previous')
-const { oneMeter } = require('./one-meter')
+const { previousCheking } = require('./previous')
+const { requestBilling, requestArchive, requestDateTime } = require('./request')
 
 const server = http.createServer();
 const io = new Server(server, {
@@ -15,41 +15,39 @@ const io = new Server(server, {
     },
 });
 
-
 let bool = true
+let clear
+
 const sendMessage = sendMessageFN(io)
 const realTime = realTimeFN(io)
 
-module.exports.startMiddleware = async (status, id='null') => {
-    if(status === 'run-app' && await filterPrevious()) {
+module.exports.startMiddleware = async (status) => {
+    if(status === 'run-app') {
         bool = false
+        clearInterval(clear)
         await previousCheking()
-    } else if(status === 'one-meter' && id) {
-        bool = false
-        await oneMeter(id, sendMessage)
-    } else {
-        bool = true
-        await getDataFromMiddleware()
     }
+
+    bool = true
+    await getDataFromMiddleware()
 }
 
 const getDataFromMiddleware = async () => {
     try {
         if (bool) {
-            // while (bool) {
-            setInterval(async () => {
+            clear = setInterval(async () => {
                 const meters = await meterModel.find()
                 for (let i in meters) {
                     let parameterIds = []
                     meters[i].parameters?.map(param => {
                         if (param.status == 'active') {
-                            parameterIds.push("'" + param.channel_full_id + "'")
+                            parameterIds.push(`${param.channel_full_id}`)
                         }
                     })
-                    await checkDate(meters[0], parameterIds).then(console.log)
+
+                    checkDate(meters[0], parameterIds).then(console.log)
                 }
             }, 15000)
-            // }
         }
     } catch (err) {
         console.log(err);
@@ -66,22 +64,12 @@ const checkDate = async (meter, parameterIds,) => {
             if (!meter.time_difference) {
                 await archiveData(meter, parameterIds, newJournalDocument._id).then((res) => {
                     console.log(res)
-                    return resolve({ txt: 'no time given', meter: meter.meter_type })
+                    resolve({ txt: 'no time given', meter: meter.meter_type })
                 })
+                return
             }
 
-            const requestString = {
-                "MeterType": meter.meter_type,
-                "MeterAddress": meter.connection_address,
-                "MeterPassword": meter.password,
-                "commMedia": meter.connection_channel,
-                "commDetail1": "COM6",
-                "commDetail2": meter.port,
-                "parity": "even",
-                "stopBit": 1,
-                "dataBit": 7,
-                "ReadingRegister": ["1.12"]
-            }
+            const requestString = requestDateTime(meter)
 
             console.log(requestString, 'Sikle 2')
             const data = await serialPort(requestString)
@@ -130,17 +118,11 @@ const archiveData = async (meter, parameterIds, journalId) => {
 
         if (last_add_time - new Date() > 0) {
             console.log('archive ketdi')
-            // realTime({
-            //     "active-power_total": 0,
-            //     "full-power_total": 0,
-            //     "reactive-power_total": 0,
-            //     "coef-active-power_total": 0,
-            // })
-            // sendMessage(meter._id, 'end')
             await billingData(meter, parameterIds).then((res) => {
                 console.log(res)
-                return resolve('next')
+                resolve('next')
             })
+            return
         }
 
         const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "archive" } })
@@ -151,22 +133,9 @@ const archiveData = async (meter, parameterIds, journalId) => {
         let reactivePowerMinus = shotchik.find(e => e.param_short_name === 'energyarchive_R-')
 
         const newDate = new Date()
-        const time = [newDate.getFullYear(), newDate.getMonth() + 1, newDate.getDate(), newDate.getFullYear(), newDate.getMonth() + 1, newDate.getDate()]
-
-        const requestString = {
-            "MeterType": meter.meter_type,
-            "MeterAddress": meter.connection_address,
-            "MeterPassword": meter.password,
-            "commMedia": meter.connection_channel,
-            "commDetail1": "COM6",
-            "commDetail2": meter.port,
-            "parity": "even",
-            "stopBit": 1,
-            "dataBit": 7,
-            "ReadingRegister": ["3.0"],
-            "ReadingRegisterTime": time
-        }
+        const requestString = requestArchive(meter, newDate, newDate)
         const data = await serialPort(requestString)
+        
         let valuesList = []
         let divide = 1
 
@@ -210,31 +179,16 @@ const archiveData = async (meter, parameterIds, journalId) => {
 
 const billingData = async (meter, parameterIds) => {
     return new Promise(async (resolve, reject) => {
-        console.log(await repositories().billingRepository().findToday(meter._id))
         if (await repositories().billingRepository().findToday(meter._id)) {
-            console.log('billing ketdi___________________')
+            console.log('billing ketdi')
             //   await currentData(meter, parameterIds, sendMessage, journalId)
             return resolve('next')
         }
-        console.log('__________________________')
         const yesterday = new Date();
         yesterday.setUTCHours(0, 0, 0, 0)
         yesterday.setDate(new Date().getDate() - 1)
-        const days = [yesterday.getFullYear(), yesterday.getMonth() + 1, yesterday.getDate(), yesterday.getFullYear(), yesterday.getMonth() + 1, yesterday.getDate()]
 
-        const requestString = {
-            "MeterType": meter.meter_type,
-            "MeterAddress": meter.connection_address,
-            "MeterPassword": meter.password,
-            "commMedia": meter.connection_channel,
-            "commDetail1": "COM6",
-            "commDetail2": meter.port,
-            "parity": "even",
-            "stopBit": 1,
-            "dataBit": 7,
-            "ReadingRegister": ["2.0"],
-            "ReadingRegisterTime": days
-        }
+        const requestString = requestBilling(meter, yesterday, yesterday)
         const data = await serialPort(requestString)
 
         const valueList = []
@@ -282,6 +236,14 @@ const billingData = async (meter, parameterIds) => {
     })
 }
 
+
+// realTime({
+//     "active-power_total": 0,
+//     "full-power_total": 0,
+//     "reactive-power_total": 0,
+//     "coef-active-power_total": 0,
+// })
+// sendMessage(meter._id, 'end')
 
 // const currentData = async (meter, parameterIds, sendMessage) => {
 //     return new Promise(async (resolve, reject) => {

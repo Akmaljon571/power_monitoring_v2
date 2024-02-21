@@ -40,10 +40,10 @@ module.exports.previousObjectRepository = () =>{
         }
     }
 
-    async function updateStatus(meter_id, status) {
+    async function updateStatus(_id, status) {
         try {
             await previousModel.updateOne(
-                { meter_id: meter_id },
+                { _id },
                 { $set: { status } }
             )
         } catch (error) {
