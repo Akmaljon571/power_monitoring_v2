@@ -1,6 +1,6 @@
 const { Socket } = require('net');
 const { InterByteTimeoutParser } = require('@serialport/parser-inter-byte-timeout');
-const { queryMaker, checkCrcIs } = require('./crc.js');
+const { queryMaker, checkCrcIs } = require('../crc.js');
 
 const socket = new Socket();
 
@@ -9,9 +9,9 @@ const openPort = (port) => {
         if (!checkTCPConnection(port)) {
             port.open(err => {
                 if (err) {
-                    reject(err);
+                    reject(err.message || 'connection error'); 
                 } else {
-                    resolve();
+                    resolve()
                 }
             });
         } else {
@@ -61,6 +61,7 @@ const closePort = (port) => {
                     resolve();
                 }
             });
+            port.removeAllListeners('end')
         } else {
             socket.end(err => {
                 if (err) {
@@ -69,6 +70,7 @@ const closePort = (port) => {
                     resolve();
                 }
             });
+            socket.removeAllListeners('end')
         }
     });
 };
@@ -76,6 +78,11 @@ const closePort = (port) => {
 const waitForData = (port, timeout = 1600) => {
     return new Promise((resolve, reject) => {
         const dataHandler = data => {
+            if (!checkTCPConnection(port)) {
+                port.removeAllListeners('data')
+            } else {
+                socket.removeAllListeners('data')
+            }
             resolve(data)
         };
         if (!checkTCPConnection(port)) {
@@ -84,7 +91,9 @@ const waitForData = (port, timeout = 1600) => {
                     interval: 300,
                     maxBufferSize: 10000
                 })
-            ).once('data', dataHandler);
+            ).once('data', dataHandler)
+            // port.removeAllListeners('data')
+            
             const timeoutId = setTimeout(() => {
                 clearTimeout(timeoutId);
                 reject(new Error('Timeout waiting for data'));
@@ -96,7 +105,7 @@ const waitForData = (port, timeout = 1600) => {
             parser.once('data', dataHandler);
             const timeoutId = setTimeout(() => {
                 clearTimeout(timeoutId);
-                reject(new Error('Timeout waiting for data'));
+                reject(new Error('Timeout waiting for data'))
             }, timeout);
         }
     });
@@ -107,7 +116,7 @@ async function serialPortEngine(command, port, meterType) {
         let key = Object.keys(command)[0];
         let dataReq = queryMaker([...Object.values(command)[0]], meterType, command.crc);
         // console.log(key, dataReq);
-        if (key == 'closeCommand') {
+        if (key == '0.3_closeCommand') {
             await writeToPort(dataReq, port);
             return { key, data: null };
         }
