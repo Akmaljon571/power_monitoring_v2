@@ -58,7 +58,7 @@ const checkDate = async (meter, parameterIds,) => {
     return new Promise(async (resolve, reject) => {
         try {
             const chech_date_fn = async () => {
-                sendMessage(meter._id, 'send')
+                sendMessage(meter._id, 'send', 'date')
                 const journalParameter = { meter: meter._id, request_type: "archive", status: "sent" }
                 const newJournalDocument = await repositories().journalRepository().insert(journalParameter)
 
@@ -71,9 +71,8 @@ const checkDate = async (meter, parameterIds,) => {
                 }
 
                 const requestString = requestDateTime(meter)
-
-                console.log(requestString, 'Sikle 2')
                 const data = await serialPort(requestString)
+                
                 const time = data[0]?.currentDate?.split(' ')[0]
                 const date = data[0]?.currentDate?.split('/')[1].split('.').reverse()
                 date[0] = '' + 20 + date[0]
@@ -83,6 +82,7 @@ const checkDate = async (meter, parameterIds,) => {
                 const result = Math.abs(datatime - new Date())
                 if ((result / 1000) <= meter.time_difference) {
                     console.log('date o`tdi')
+                    sendMessage(meter._id, 'end', 'date')
                     await archiveData(meter, parameterIds, newJournalDocument._id)
                         .then((res) => {
                             console.log(res)
@@ -90,7 +90,7 @@ const checkDate = async (meter, parameterIds,) => {
                         })
                 } else {
                     await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "failed" })
-                    sendMessage(meter._id, "Error")
+                    sendMessage(meter._id, "Error", 'date')
                     resolve({ txt: 'error', meter: meter.meter_type })
                 }
             }
@@ -108,7 +108,7 @@ const checkDate = async (meter, parameterIds,) => {
             resolve({ txt: 'exit', meter: meter.meter_type })
         } catch (error) {
             console.log(error)
-            sendMessage(meter._id, 'Error')
+            sendMessage(meter._id, 'Error', 'date')
             resolve('ok')
         }
     });
@@ -124,7 +124,7 @@ const archiveData = async (meter, parameterIds, journalId) => {
             last_add_time.setUTCMilliseconds(checkTime.time);
 
             if (last_add_time - new Date() > 0) {
-                console.log('archive ketdi')
+                sendMessage(meter._id, 'end', 'archive')
                 await billingData(meter, parameterIds).then((res) => {
                     console.log(res)
                     resolve('next')
@@ -142,6 +142,7 @@ const archiveData = async (meter, parameterIds, journalId) => {
             const newDate = new Date()
             const requestString = requestArchive(meter, newDate, newDate)
             const data = await serialPort(requestString)
+            sendMessage(meter._id, 'send', 'archive')
 
             let valuesList = []
 
@@ -174,6 +175,7 @@ const archiveData = async (meter, parameterIds, journalId) => {
             })
 
             console.log(valuesList.length, 'valueList Archive')
+            sendMessage(meter._id, 'end', 'archive')
             await billingData(meter, parameterIds).then(async () => {
                 await repositories().parameterValueRepository().insert(false, valuesList)
                 await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
@@ -182,7 +184,7 @@ const archiveData = async (meter, parameterIds, journalId) => {
             })
         } catch (error) {
             console.log(error)
-            sendMessage(meter._id, 'Error')
+            sendMessage(meter._id, 'Error', 'archive')
             resolve('ok')
         }
     })
@@ -193,7 +195,8 @@ const billingData = async (meter, parameterIds) => {
         try {
             if (await repositories().billingRepository().findToday(meter._id)) {
                 console.log('billing ketdi')
-                //   await currentData(meter, parameterIds, sendMessage, journalId)
+                sendMessage(meter._id, 'end', 'billing')
+                //   await currentData(meter, parameterIds)
                 return resolve('next')
             }
             const yesterday = new Date();
@@ -202,6 +205,7 @@ const billingData = async (meter, parameterIds) => {
 
             const requestString = requestBilling(meter, yesterday, yesterday)
             const data = await serialPort(requestString)
+            sendMessage(meter._id, 'send', 'billing')
 
             const valueList = []
             data.map(e => {
@@ -238,6 +242,7 @@ const billingData = async (meter, parameterIds) => {
                 valueList.push(obj)
             })
             console.log(valueList.length, 'valueList billing')
+            sendMessage(meter._id, 'end', 'billing')
 
             // await currentData(meter, parameterIds, sendMessage).then(() => {
             await repositories().billingRepository().insert(valueList).then(() => {
@@ -247,7 +252,7 @@ const billingData = async (meter, parameterIds) => {
             // })
         } catch (error) {
             console.log(error)
-            sendMessage(meter._id, 'Error')
+            sendMessage(meter._id, 'Error', 'billing')
             resolve('ok')
         }
     })

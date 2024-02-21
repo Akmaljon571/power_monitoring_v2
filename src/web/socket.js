@@ -14,8 +14,8 @@ module.exports.socketIO = (io) => {
 };
 
 module.exports.sendMessageFN = (io) => {
-    return (id, status) => {
-        console.log(id, status)
+    return (id, status, where) => {
+        console.log(id, status, where)
         io.emit("send_message", { id, status });
     }
 }
