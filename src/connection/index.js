@@ -1,39 +1,72 @@
+const http = require('http')
+const { Server } = require('socket.io')
 const { meterModel } = require('../models')
 const { repositories } = require('../repository')
 const { serialPort } = require('../server/utils/serialport')
+const { sendMessageFN, realTimeFN } = require('../web/socket')
+const { previousCheking, filterPrevious } = require('./previous')
+const { oneMeter } = require('./one-meter')
 
-module.exports.getDataFromMiddleware = async (sendMessage, realTime) => {
+const server = http.createServer();
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        method: ["*"],
+    },
+});
+
+let bool = true
+const sendMessage = sendMessageFN(io)
+const realTime = realTimeFN(io)
+
+module.exports.startMiddleware = async (status, id='null') => {
+    if(status === 'run-app' && await filterPrevious()) {
+        bool = false
+        await previousCheking()
+    } else if(status === 'one-meter' && id) {
+        bool = false
+        await oneMeter(id, sendMessage)
+    } else {
+        bool = true
+        await getDataFromMiddleware()
+    }
+}
+
+const getDataFromMiddleware = async () => {
     try {
-        while (true) {
-            const meters = await meterModel.find()
-            for (let i in meters) {
-                let parameterIds = []
-                meters[i].parameters?.map(param => {
-                    if (param.status == 'active') {
-                        parameterIds.push("'" + param.channel_full_id + "'")
-                    }
-                })
-                await checkDate(meters[0], parameterIds, sendMessage, realTime).then(console.log)
-            }
+        if (bool) {
+            // while (bool) {
+            setInterval(async () => {
+                const meters = await meterModel.find()
+                for (let i in meters) {
+                    let parameterIds = []
+                    meters[i].parameters?.map(param => {
+                        if (param.status == 'active') {
+                            parameterIds.push("'" + param.channel_full_id + "'")
+                        }
+                    })
+                    await checkDate(meters[0], parameterIds).then(console.log)
+                }
+            }, 15000)
+            // }
         }
     } catch (err) {
         console.log(err);
     }
 }
 
-const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
+const checkDate = async (meter, parameterIds,) => {
     return new Promise(async (resolve, reject) => {
         const chech_date_fn = async () => {
-            await sendMessage(meter._id, 'send')
+            sendMessage(meter._id, 'send')
             const journalParameter = { meter: meter._id, request_type: "archive", status: "sent" }
             const newJournalDocument = await repositories().journalRepository().insert(journalParameter)
 
             if (!meter.time_difference) {
-                await archiveData(meter, parameterIds, sendMessage, realTime, newJournalDocument._id)
-                    .then(() => {
-                        resolve({ txt: 'no time given', meter: meter.meter_type })
-                        return
-                    })
+                await archiveData(meter, parameterIds, newJournalDocument._id).then((res) => {
+                    console.log(res)
+                    return resolve({ txt: 'no time given', meter: meter.meter_type })
+                })
             }
 
             const requestString = {
@@ -48,6 +81,8 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
                 "dataBit": 7,
                 "ReadingRegister": ["1.12"]
             }
+
+            console.log(requestString, 'Sikle 2')
             const data = await serialPort(requestString)
             const time = data[0]?.currentDate?.split(' ')[0]
             const date = data[0]?.currentDate?.split('/')[1].split('.').reverse()
@@ -55,17 +90,17 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
             const datatime = new Date(...date.concat(time.split(':')))
             datatime.setMonth(datatime.getMonth() - 1)
 
-            console.log(datatime)
             const result = Math.abs(datatime - new Date())
             if ((result / 1000) <= meter.time_difference) {
                 console.log('date o`tdi')
-                await archiveData(meter, parameterIds, sendMessage, realTime, newJournalDocument._id)
-                    .then(() => {
+                await archiveData(meter, parameterIds, newJournalDocument._id)
+                    .then((res) => {
+                        console.log(res)
                         resolve({ txt: 'next', meter: meter.meter_type })
                     })
             } else {
                 await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "failed" })
-                await sendMessage(meter._id, "Error")
+                sendMessage(meter._id, "Error")
                 resolve({ txt: 'error', meter: meter.meter_type })
             }
         }
@@ -84,7 +119,7 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
     });
 };
 
-const archiveData = async (meter, parameterIds, sendMessage, realTime, journalId) => {
+const archiveData = async (meter, parameterIds, journalId) => {
     return new Promise(async (resolve, reject) => {
         const checkTime = await repositories().parameterValueRepository().findTodayList(new Date())
         await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
@@ -94,18 +129,17 @@ const archiveData = async (meter, parameterIds, sendMessage, realTime, journalId
 
         if (last_add_time - new Date() > 0) {
             console.log('archive ketdi')
-            realTime({
-                "active-power_total": 0,
-                "full-power_total": 0,
-                "reactive-power_total": 0,
-                "coef-active-power_total": 0,
-            })
-            await sendMessage(meter._id, 'end')
-            //   await billingData(meter, parameterIds, sendMessage, journalId)
-            // .then(() => {
-            resolve('next')
-            return
+            // realTime({
+            //     "active-power_total": 0,
+            //     "full-power_total": 0,
+            //     "reactive-power_total": 0,
+            //     "coef-active-power_total": 0,
             // })
+            // sendMessage(meter._id, 'end')
+            await billingData(meter, parameterIds).then((res) => {
+                console.log(res)
+                return resolve('next')
+            })
         }
 
         const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "archive" } })
@@ -163,77 +197,89 @@ const archiveData = async (meter, parameterIds, sendMessage, realTime, journalId
             }
         })
 
-        console.log(valuesList.length, 'valueList')
-        // await billingData(meter, parameterIds, sendMessage, journalId).then(async() => {
-        await repositories().parameterValueRepository().insert(false, valuesList)
-        await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
-        // }).finally(() => {
-        resolve('ok')
-        // })
+        console.log(valuesList.length, 'valueList Archive')
+        await billingData(meter, parameterIds).then(async () => {
+            await repositories().parameterValueRepository().insert(false, valuesList)
+            await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
+        }).finally(() => {
+            resolve('ok')
+        })
     })
 }
 
-// const billingData = async (meter, parameterIds) => {
-//   return new Promise( async (resolve, reject) => {
-//     // if (await repositories().billingRepository().findToday(meter._id)) {
-//     //   console.log('billing ketdi')
-//     // //   await currentData(meter, parameterIds, sendMessage, journalId)
-//     //   resolve('next')
-//     //   return
-//     // }
+const billingData = async (meter, parameterIds) => {
+    return new Promise(async (resolve, reject) => {
+        console.log(await repositories().billingRepository().findToday(meter._id))
+        if (await repositories().billingRepository().findToday(meter._id)) {
+            console.log('billing ketdi___________________')
+            //   await currentData(meter, parameterIds, sendMessage, journalId)
+            return resolve('next')
+        }
+        console.log('__________________________')
+        const yesterday = new Date();
+        yesterday.setUTCHours(0, 0, 0, 0)
+        yesterday.setDate(new Date().getDate() - 1)
+        const days = [yesterday.getFullYear(), yesterday.getMonth() + 1, yesterday.getDate(), yesterday.getFullYear(), yesterday.getMonth() + 1, yesterday.getDate()]
 
-//     const date = new Date();
-//     const days = [date.getFullYear(), date.getMonth()+1, date.getDate(), date.getFullYear(), date.getMonth()+1, date.getDate()]
+        const requestString = {
+            "MeterType": meter.meter_type,
+            "MeterAddress": meter.connection_address,
+            "MeterPassword": meter.password,
+            "commMedia": meter.connection_channel,
+            "commDetail1": "COM6",
+            "commDetail2": meter.port,
+            "parity": "even",
+            "stopBit": 1,
+            "dataBit": 7,
+            "ReadingRegister": ["2.0"],
+            "ReadingRegisterTime": days
+        }
+        const data = await serialPort(requestString)
 
-//     const requestString = {
-//         "MeterType": meter.meter_type,
-//         "MeterAddress": meter.connection_address,
-//         "MeterPassword": meter.password,
-//         "commMedia": meter.connection_channel,
-//         "commDetail1": "COM6",
-//         "commDetail2": meter.port,
-//         "parity": "even",
-//         "stopBit": 1,
-//         "dataBit": 7,
-//         "ReadingRegister": ["2.0"],
-//         "ReadingRegisterTime": days
-//     }
-//     const data = await serialPort(requestString)
-//     console.log(data)
-//     // if (Array.isArray(json), (json.length == 3|| json.length == 2)) {
-//     //     const id = json.length == 3 ? 1 : 0
-//     //     const dataArr = json[id].rowValues
-//     //     const obj = {
-//     //         summa_A1: dataArr[2]/100,
-//     //         summa_A0: dataArr[3]/100,
-//     //         summa_R0: dataArr[4]/100,
-//     //         summa_R1: dataArr[5]/100,
-//     //         tarif1_A1: dataArr[6]/100,
-//     //         tarif2_A1: dataArr[7]/100,
-//     //         tarif3_A1: dataArr[8]/100,
-//     //         tarif4_A1: dataArr[9]/100,
-//     //         tarif1_A0: dataArr[10]/100,
-//     //         tarif2_A0: dataArr[11]/100,
-//     //         tarif3_A0: dataArr[12]/100,
-//     //         tarif4_A0: dataArr[13]/100,
-//     //         tarif1_R1: dataArr[14]/100,
-//     //         tarif2_R1: dataArr[15]/100,
-//     //         tarif3_R1: dataArr[16]/100,
-//     //         tarif4_R1: dataArr[17]/100,
-//     //         tarif1_R0: dataArr[18]/100,
-//     //         tarif2_R0: dataArr[19]/100,
-//     //         tarif3_R0: dataArr[20]/100,
-//     //         tarif4_R0: dataArr[21]/100,
-//     //         meter_id: meter._id,
-//     //         date: dataArr[0]
-//     //     }
+        const valueList = []
+        data.map(e => {
+            const dateFormat = e[0].split('.').reverse()
+            dateFormat[0] = "" + "20" + dateFormat[0]
+            const date = new Date(dateFormat)
+            date.setUTCHours(0, 0, 0, 0)
+            date.setDate(date.getDate() + 1)
 
-//     //     await repositories().billingRepository().insert(obj)
-//     //     await currentData(meter, parameterIds, sendMessage, journalId)
-//     //     resolve(json)
-//     // }
-//   })
-// }
+            const obj = {
+                summa_A1: e[1] / 100,
+                summa_A0: e[2] / 100,
+                summa_R0: e[3] / 100,
+                summa_R1: e[4] / 100,
+                tarif1_A1: e[5] / 100,
+                tarif2_A1: e[6] / 100,
+                tarif3_A1: e[7] / 100,
+                tarif4_A1: e[8] / 100,
+                tarif1_A0: e[9] / 100,
+                tarif2_A0: e[10] / 100,
+                tarif3_A0: e[11] / 100,
+                tarif4_A0: e[12] / 100,
+                tarif1_R1: e[13] / 100,
+                tarif2_R1: e[14] / 100,
+                tarif3_R1: e[15] / 100,
+                tarif4_R1: e[16] / 100,
+                tarif1_R0: e[17] / 100,
+                tarif2_R0: e[18] / 100,
+                tarif3_R0: e[19] / 100,
+                tarif4_R0: e[20] / 100,
+                meter_id: meter._id,
+                date
+            }
+            valueList.push(obj)
+        })
+        console.log(valueList.length, 'valueList billing')
+
+        // await currentData(meter, parameterIds, sendMessage).then(() => {
+        await repositories().billingRepository().insert(valueList).then(() => {
+            resolve('ok')
+        })
+        // }).finally(() => {
+        // })
+    })
+}
 
 
 // const currentData = async (meter, parameterIds, sendMessage) => {

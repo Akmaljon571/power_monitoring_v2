@@ -6,7 +6,8 @@ module.exports.previousObjectRepository = () =>{
         insert,
         update,
         updateStatus,
-        findOne
+        findOne,
+        findAll
     })
 
     async function insert(meter) {
@@ -52,5 +53,13 @@ module.exports.previousObjectRepository = () =>{
 
     async function findOne(meter_id) {
         return await previousModel.findOne({ meter_id:meter_id })
+    }
+
+    async function findAll() {
+        try {
+            return await previousModel.find()
+        } catch (error) {
+            throw new CustomError(error.status, error.message)
+        }
     }
 }

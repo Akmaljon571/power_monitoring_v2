@@ -9,7 +9,7 @@ const openPort = (port) => {
         if (!checkTCPConnection(port)) {
             port.open(err => {
                 if (err) {
-                    reject(err);
+                    reject(err.message || 'connection error'); 
                 } else {
                     resolve();
                 }
@@ -70,12 +70,15 @@ const closePort = (port) => {
                 }
             });
         }
+        port.removeAllListeners('end')
+
     });
 };
 
 const waitForData = (port, timeout = 1600) => {
     return new Promise((resolve, reject) => {
         const dataHandler = data => {
+            port.removeAllListeners('data')
             resolve(data)
         };
         if (!checkTCPConnection(port)) {
@@ -84,7 +87,9 @@ const waitForData = (port, timeout = 1600) => {
                     interval: 300,
                     maxBufferSize: 10000
                 })
-            ).once('data', dataHandler);
+            ).once('data', dataHandler)
+            // port.removeAllListeners('data')
+            
             const timeoutId = setTimeout(() => {
                 clearTimeout(timeoutId);
                 reject(new Error('Timeout waiting for data'));
@@ -96,7 +101,7 @@ const waitForData = (port, timeout = 1600) => {
             parser.once('data', dataHandler);
             const timeoutId = setTimeout(() => {
                 clearTimeout(timeoutId);
-                reject(new Error('Timeout waiting for data'));
+                reject(new Error('Timeout waiting for data'))
             }, timeout);
         }
     });

@@ -22,6 +22,8 @@ async function getCounterResult(data) {
         const { setUp, tcpConnection, serialPort } = setConfig(data)
         
         const port = setUp?.connectionType === 1 ? tcpConnection : setUp?.connectionType === 0 ? new SerialPort(serialPort) : undefined
+        port.once('error', (error) => reject(error.message || 'error while reading data!'))
+
         if (!port) throw new Error('commMedia is not valid')
         let type = setUp.meterType.split('_')
         
@@ -106,8 +108,7 @@ async function getCounterResult(data) {
         }
         return result
     } catch (error) {
-        console.log(error.message)
-        throw new Error(`Error in getCounterResult function: ${error.message}`)
+        console.log(`Error in getCounterResult function: ${error}`)
     }
 }
 
@@ -117,7 +118,8 @@ async function getLstCounterResult(data) {
         const result = []
         const { setUp, serialPort } = setConfig(data)
         const port = new SerialPort(serialPort)
-        
+        port.once('error', (error) => reject(error.message || 'error while reading data!'))
+
         let type = setUp.meterType.split('_')
         
         const getCommands = ObisQuery[`${type[0]}_Counter_Query`](data.ReadingRegister, setUp, 'obis')
@@ -127,7 +129,6 @@ async function getLstCounterResult(data) {
         let lstResult
         let lstResultIndex
         let getValue = []
-        
         
         if (checkCounterExist('CE', setUp)) {
             if (checkCounterExist(type[1], '308')) {

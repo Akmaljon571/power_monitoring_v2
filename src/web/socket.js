@@ -13,14 +13,14 @@ module.exports.socketIO = (io) => {
     // });
 };
 
-module.exports.sendMessage = (io) => {
+module.exports.sendMessageFN = (io) => {
     return (id, status) => {
         console.log(id, status)
         io.emit("send_message", { id, status });
     }
 }
 
-module.exports.realTime = (io) => {
+module.exports.realTimeFN = (io) => {
     return (data) => {
         console.log(data)
         io.emit("real-time", { data });

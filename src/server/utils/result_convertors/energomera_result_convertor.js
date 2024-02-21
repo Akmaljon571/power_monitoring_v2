@@ -85,25 +85,52 @@ function getEnergomeraResult(data, key, opt) {
             case 'lst':
             return { [key]: value }
             case '3.0':
-            return getProfile1(data, opt)
+            return getProfile(data, opt)
             case '2.0':
             return createResultA_R(data, key, opt)
             case 'cAutoReading':
-            return createResultA_R(data)
+            return createResultA_R1(data)
             default:
-            const ifExist = ['positiveA', 'positiveR', 'negativeA', 'negativeR']
-            if (ifExist.includes(key.split('.')[0])){
-                return createResultA_R(data, key, opt)
-            } else {
-                console.log(key, data, 'hammasi ok');
-            }
+            console.log(key, data, 'hammasi ok');
         }
     } catch (error) {
         throw new Error(`Error in getEnergomeraResult function: ${error.message}`)
     }
 }
 
-function createResultA_R(param, keyResult='', optDate) {
+function createResultA_R(params) {
+    let results = []
+    for (const i of params) {
+        
+        const [dateSum, ...tarifs] = extractorFunc(i.data.toString())
+        const [date, sum] = dateSum.split(',')
+        
+        if (!results.length) {
+            results.push({
+                date,
+                [i.key + ':sum']: sum,
+                tarif: tarifs
+            })
+        }else {
+            let result = results.filter(n => n.date === date)
+            if (result.length) {
+                result[0][i.key + ':sum'] = sum
+                result[0].tarif.push(...tarifs)
+            } else {
+                results.push({
+                date,
+                [i.key + ':sum']: sum,
+                tarif: tarifs
+            })
+            }
+        }
+        
+    }
+    return results.map(i => [i.date, i['positiveA.all:sum'], i['negativeA.all:sum'], i['positiveR.all:sum'], i['negativeR.all:sum'], ...i.tarif])
+
+}
+
+function createResultA_R1(param, keyResult='', optDate) {
     let value = {
         date: '',
         billing: []
@@ -113,7 +140,7 @@ function createResultA_R(param, keyResult='', optDate) {
         const [dateSum, ...tarifs] = extractorFunc(i.data.toString());
         const [date, sum] = dateSum.split(',').length === 1 ? [null, tarifs.shift()] : dateSum.split(',');
         
-        const result = {};
+        const result = {}
         keyResult = i.key.includes('autoReading.') ? i.key.split('autoReading.')[1] : i.key
         key = keyResult.split('.')[0]
         if (keyResult.endsWith('.all')) {
@@ -141,7 +168,7 @@ function createResultA_R(param, keyResult='', optDate) {
     return value;
 }
 
-function getProfile1(data) {
+function getProfile(data) {
     const results = []
     for (const i of data) {
         let extactedData = extractorFunc(i.data)
@@ -218,7 +245,7 @@ function getProfile1(data) {
             }
         }
     }
-
+    
     return results
 }
 
