@@ -87,26 +87,26 @@ const billingFill = async (meter, oldDate) => {
             date.setDate(date.getDate() + 1)
 
             const obj = {
-                summa_A1: e[1] / 100,
-                summa_A0: e[2] / 100,
-                summa_R0: e[3] / 100,
-                summa_R1: e[4] / 100,
-                tarif1_A1: e[5] / 100,
-                tarif2_A1: e[6] / 100,
-                tarif3_A1: e[7] / 100,
-                tarif4_A1: e[8] / 100,
-                tarif1_A0: e[9] / 100,
-                tarif2_A0: e[10] / 100,
-                tarif3_A0: e[11] / 100,
-                tarif4_A0: e[12] / 100,
-                tarif1_R1: e[13] / 100,
-                tarif2_R1: e[14] / 100,
-                tarif3_R1: e[15] / 100,
-                tarif4_R1: e[16] / 100,
-                tarif1_R0: e[17] / 100,
-                tarif2_R0: e[18] / 100,
-                tarif3_R0: e[19] / 100,
-                tarif4_R0: e[20] / 100,
+                summa_A1: e[1],
+                summa_A0: e[2],
+                summa_R0: e[3],
+                summa_R1: e[4],
+                tarif1_A1: e[5],
+                tarif2_A1: e[6],
+                tarif3_A1: e[7],
+                tarif4_A1: e[8],
+                tarif1_A0: e[9],
+                tarif2_A0: e[10],
+                tarif3_A0: e[11],
+                tarif4_A0: e[12],
+                tarif1_R1: e[13],
+                tarif2_R1: e[14],
+                tarif3_R1: e[15],
+                tarif4_R1: e[16],
+                tarif1_R0: e[17],
+                tarif2_R0: e[18],
+                tarif3_R0: e[19],
+                tarif4_R0: e[20],
                 meter_id: meter._id,
                 date
             }
@@ -125,12 +125,13 @@ module.exports.previousCheking = async () => {
     return new Promise(async (resolve, reject) => {
         try {
             const previous = await filterPrevious()
-
+            console.log(previous, 'previous')
             if (previous.length) {
                 for (let i = 0; i < previous.length; i++) {
                     const meter = await repositories().meterRepository().findOne(previous[i].meter_id)
 
                     if (previous[i].archive - yesterday < 0) {
+                        console.log('archive boshlandi')
                         await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
                             await archiveFill(meter, previous[i].archive).then(async () => {
                                 await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
@@ -138,6 +139,7 @@ module.exports.previousCheking = async () => {
                         })
                     }
                     if (previous[i].billing - yesterday < 0) {
+                        console.log('billing boshlandi')
                         await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
                             await billingFill(meter, previous[i].billing).then(async () => {
                                 await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)

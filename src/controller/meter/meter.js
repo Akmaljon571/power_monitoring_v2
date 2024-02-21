@@ -1,3 +1,4 @@
+const { startMiddleware } = require("../../connection")
 const { repositories } = require("../../repository/index")
 const CustomError = require("../../utils/custom_error")
 
@@ -39,9 +40,9 @@ module.exports.createMeter = async(req, res) => {
                 parent_id: args.id,
                 meter: newMeterDocument._id,
             }
-            await repositories().previousObjectRepository().insert(newMeterDocument)
             await repositories().folderObjectRepository().insert(folderParameter)
             await repositories().parameterRepository().insert(args.parameters, newMeterDocument)
+            await repositories().previousObjectRepository().insert(newMeterDocument)
 
         } else if (args.meter_form === "uspd") {
             let meter_param = {
@@ -71,6 +72,7 @@ module.exports.createMeter = async(req, res) => {
             throw new CustomError(400, "undefined type")
         }
 
+        startMiddleware('run-app')
         res.status(201).json({ status: 201, error: null, data: "Succesfull saved" })
     } catch (err) {
         res.json(new CustomError(err.status, err.message))
