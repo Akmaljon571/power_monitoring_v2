@@ -4,17 +4,15 @@ const { previousCheking } = require('./previous')
 const { requestBilling, requestArchive, requestDateTime, requestCurrent } = require('./request')
 
 let bool = true
-let clear
 
 module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     if (status === 'run-app') {
         bool = false
-        clearInterval(clear)
         await previousCheking()
     }
 
     bool = true
-    await getDataFromMiddleware(sendMessage, realTime)
+    // await getDataFromMiddleware(sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (sendMessage, realTime) => {
@@ -163,6 +161,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
             await billingData(meter, parameterIds, sendMessage, realTime).then(async () => {
                 await repositories().parameterValueRepository().insert(false, valuesList)
                 await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
+                await repositories().previousObjectRepository().update(meter._id, last_add_time)
             }).finally(() => {
                 resolve('ok')
             })
@@ -232,6 +231,7 @@ const billingData = async (meter, parameterIds, sendMessage, realTime) => {
 
             await currentData(meter, parameterIds, sendMessage, realTime).then(async () => {
                 await repositories().billingRepository().insert(valueList)
+                await repositories().previousObjectRepository().update(meter._id, '', yesterday)
             }).finally(() => {
                 resolve('ok')
             })

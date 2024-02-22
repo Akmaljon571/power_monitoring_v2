@@ -1,0 +1,12 @@
+[
+    {
+        "voltage_A": "1.1.0",
+        "voltage_B": "1.1.1",
+        "voltage_C": "1.1.2"
+    },
+    {
+        "datatime": "1.15.0",
+        "billing": "2.0",
+        "archive": "3.0"
+    }
+]

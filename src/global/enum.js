@@ -1,0 +1,1 @@
+module.exports.connection_channel_enum = ["245","246","247","248"]

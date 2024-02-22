@@ -1,9 +1,11 @@
 const { startMiddleware } = require("../../connection")
+const { paramsReadFile } = require("../../global/file-path")
+const { meterListReadFile } = require("../../global/meter-list")
 const { repositories } = require("../../repository/index")
 const CustomError = require("../../utils/custom_error")
 
 // createMeterFunction
-module.exports.createMeter = async(req, res) => {
+module.exports.createMeter = async (req, res) => {
     try {
         const args = req.result
         if (args.meter_form === "meter") {
@@ -30,7 +32,7 @@ module.exports.createMeter = async(req, res) => {
                 days_of_month: args.days_of_month,
                 days_of_week: args.days_of_week,
                 hours_of_day: args.hours_of_day,
-                time_difference:args.time_difference
+                time_difference: args.time_difference
             }
 
             const newMeterDocument = await repositories().meterRepository().insert(meter_param)
@@ -80,7 +82,7 @@ module.exports.createMeter = async(req, res) => {
 }
 
 // getListOfMetersFunction
-module.exports.getListMeter = async(req, res) => {
+module.exports.getListMeter = async (req, res) => {
     try {
         const meterList = await repositories().meterRepository().findAll({})
         res.status(200).json({ status: 200, error: null, data: meterList })
@@ -91,11 +93,31 @@ module.exports.getListMeter = async(req, res) => {
 }
 
 // getSingleMeterFunction
-module.exports.getOneMeter = async(req, res) => {
+module.exports.getOneMeter = async (req, res) => {
     try {
         const { id } = req.params
         const meterDocument = await repositories().meterRepository().findOne(id)
         res.status(200).json({ status: 200, error: null, data: meterDocument })
+    } catch (err) {
+        const error = new CustomError(err.status, err.message)
+        res.status(error.status).json({ status: error.status, error: error.message, data: null })
+    }
+}
+
+module.exports.paramsList = async (req, res) => {
+    try {
+        const { type } = req.params
+        
+        res.status(200).json({ status: 200, error: null, data: paramsReadFile(type.toUpperCase()) })
+    } catch (err) {
+        const error = new CustomError(err.status, err.message)
+        res.status(error.status).json({ status: error.status, error: error.message, data: null })
+    }
+}
+
+module.exports.meterList = async (req, res) => {
+    try {
+        res.status(200).json({ status: 200, error: null, data: meterListReadFile() })
     } catch (err) {
         const error = new CustomError(err.status, err.message)
         res.status(error.status).json({ status: error.status, error: error.message, data: null })
@@ -110,12 +132,12 @@ module.exports.updateMeter = async (req, res) => {
 
         if (data.meter_form === "meter") {
             await repositories().meterRepository().updateOne(id, data)
-            if(data?.name) await repositories().folderObjectRepository().updateOne(id,{ name:data.name })
-            if(data?.parameters) await repositories().parameterRepository().updateMany(data.parameters)
+            if (data?.name) await repositories().folderObjectRepository().updateOne(id, { name: data.name })
+            if (data?.parameters) await repositories().parameterRepository().updateMany(data.parameters)
         } else if (data.meter_form === "uspd") {
             await repositories().meterRepository().updateUSPD(id, data)
-            if(data?.name) await repositories().folderObjectRepository().updateOne(id,{ name:data.name })
-            if(data?.parameters) await repositories().parameterRepository().updateMany(data.parameters)
+            if (data?.name) await repositories().folderObjectRepository().updateOne(id, { name: data.name })
+            if (data?.parameters) await repositories().parameterRepository().updateMany(data.parameters)
         } else {
             throw new CustomError(400, "undefined type")
         }

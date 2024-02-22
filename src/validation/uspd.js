@@ -1,6 +1,5 @@
 const Joi = require("joi")
-
-const connection_channel_enum = ["245","246","247","248"]
+const { connection_channel_enum } = require("../global/enum")
 
 module.exports.uspdCreateJoi = Joi.object().keys({
     name: Joi.string().required(), 
@@ -21,5 +20,3 @@ module.exports.uspdUpdateJoi = Joi.object().keys({
     password: Joi.string(),
     connection_channel: Joi.valid(...connection_channel_enum)
 }).required()
-
-module.exports.connection_channel_enum = connection_channel_enum

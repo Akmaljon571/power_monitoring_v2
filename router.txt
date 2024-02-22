@@ -605,9 +605,22 @@
         data: data || null
     }
 
+/meter/params/:type
+    params: {
+        type: example: /meter/params/CE_308
+    }
+    res {
+        status: 403 || 400 || 200
+        error: ''
+        data: data || null
+    }
 
-
-
+/meter/meter-list
+    res {
+        status: 403 || 400 || 200
+        error: ''
+        data: data || null
+    }
 
 
 

@@ -1,14 +1,12 @@
 admin listini super ham kora oladimi ? [GET]
-tokenlarni headersdan emas cookie ga ozgartirib qoyish
-login vohtida 10X ni yoqib qoyish
 
 app.js ichida shu kodni qoshib qoyish {
     credentials: true,
     origin: 'http://localhost:5500'
 }
 
-login ni erte tekshiramiz
-
 vectorni to'girlash
 
-access_token qancha vaqt bo'ladi
+startMiddlewareni meter qoshishda yoqib qoyish
+
+meter va parameterlardagi enum larni to'girlab chiqish
