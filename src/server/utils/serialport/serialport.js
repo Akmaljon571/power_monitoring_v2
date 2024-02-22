@@ -29,25 +29,28 @@ async function getCounterResult(data) {
         
         const getCommands = ObisQuery[`${type[0]}_Counter_Query`](data.ReadingRegister, setUp, 'obis')
         const startCommands = ObisQuery[`${type[0]}_Counter_Query`](null, setUp)
-        
         if (checkCounterExist('CE', setUp)) {
             for(let i of getCommands) {
-                startCommands.splice(3,0,i)
-                await openPort(port)
-                for (let j of startCommands) {
-                    let { data, key } = await serialPortEngine(j, port)
-                    if (data && !versionAllowed.includes(key)) {
-                        let resValue = getEnergomeraResult(data,key)
-                        if (resValue.version && !resValue.version.includes(type.join(''))) {
-                            throw new Error('connection error check parameters')
-                        } else if (key.split('_')[1] != 'version') {
-                            result.push(resValue)
+                if (!Object.values(i)[0].length) {
+                    result.push({ [Object.keys(i)[0].split('_')[0]]: 'invalid request'})
+                } else {
+                    startCommands.splice(3,0,i)
+                    await openPort(port)
+                    for (let j of startCommands) {
+                        let { data, key } = await serialPortEngine(j, port)
+                        if (data && !versionAllowed.includes(key)) {
+                            let resValue = getEnergomeraResult(data,key)
+                            // console.log(resValue);
+                            if (resValue.version && !resValue.version.includes(type.join(''))) {
+                                throw new Error('connection error check parameters')
+                            } else if (key.split('_')[1] != 'version') {
+                                result.push(resValue)
+                            }
                         }
                     }
+                    startCommands.splice(3,1)
+                    await closePort(port)
                 }
-                
-                startCommands.splice(3,1)
-                await closePort(port)
             }
         } else if (checkCounterExist('Mercury', setUp)) {
             for(let i of getCommands) {
@@ -83,7 +86,7 @@ async function getCounterResult(data) {
         }
         return result
     } catch (error) {
-        console.log(error.message)
+        console.log(error)
         throw new Error(`Error in getCounterResult function: ${error.message}`)
     }
 }
@@ -105,7 +108,7 @@ async function getLstCounterResult(data) {
         let lstResult
         let lstResultIndex
         let getValue = []
-
+        
         if (checkCounterExist('CE', setUp)) {
             if (checkCounterExist(type[1], '308')) {
                 const lstCommands = ObisQuery[`${type[0]}_Counter_Query`](null, setUp, 'lst')

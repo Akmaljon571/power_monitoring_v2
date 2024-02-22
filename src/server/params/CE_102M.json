@@ -1,0 +1,14 @@
+[
+    {
+        "current_energytotal_A+": "1.0.0",
+        "current_voltage_A": "1.4.0", 
+        "current_frequency": "1.6.0",
+        "current_current_A": "1.7.0",
+        "current_active-power_A": "1.8.0",
+        "current_coef-active-power_A": "1.13.0"
+    },
+    {
+        "datatime": "1.15.0",
+        "billing": "2.0"
+    }
+]
