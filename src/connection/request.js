@@ -1,3 +1,5 @@
+const { paramsIndex2 } = require("../global/file-path")
+
 module.exports.requestBilling = (meter, date1, date2) => {
     const time = [date1.getFullYear(), date1.getMonth() + 1, date1.getDate(), date2.getFullYear(), date2.getMonth() + 1, date2.getDate()]
     return {
@@ -10,7 +12,7 @@ module.exports.requestBilling = (meter, date1, date2) => {
         "parity": "even",
         "stopBit": 1,
         "dataBit": 7,
-        "ReadingRegister": ["2.0"],
+        "ReadingRegister": [paramsIndex2(meter.meter_type).billing],
         "ReadingRegisterTime": time
     }
 }
@@ -27,7 +29,7 @@ module.exports.requestArchive = (meter, date1, date2) => {
         "parity": "even",
         "stopBit": 1,
         "dataBit": 7,
-        "ReadingRegister": ["3.0"],
+        "ReadingRegister": [paramsIndex2(meter.meter_type).archive],
         "ReadingRegisterTime": time
     }
 }
@@ -43,7 +45,7 @@ module.exports.requestDateTime = (meter) => {
         "parity": "even",
         "stopBit": 1,
         "dataBit": 7,
-        "ReadingRegister": ["1.15.0"]
+        "ReadingRegister": [paramsIndex2(meter.meter_type).datatime]
     }
 }
 

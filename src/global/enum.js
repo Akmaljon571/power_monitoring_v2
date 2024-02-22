@@ -1,1 +1,6 @@
-module.exports.connection_channel_enum = ["245","246","247","248"]
+module.exports.connection_channel_uspd_enum = ["245","246","247","248"]
+module.exports.period_type = ["weekly","monthly"]
+module.exports.meter_form = ["uspd", "meter"]
+module.exports.parameter_type = ["current", "archive", "total"]
+module.exports.attached = ['0', '1']
+module.exports.statusEnum = ["active", "inactive"]

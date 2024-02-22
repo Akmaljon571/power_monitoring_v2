@@ -1,6 +1,8 @@
 const mongoose = require("mongoose")
 const { calculationObjectModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
+const { energyarchive, energytotal } = require("../../global/variable")
+const { all_short_name } = require("../../global/file-path")
 
 module.exports.calculationObjectRepository = () => {
     return Object.freeze({
@@ -221,16 +223,7 @@ module.exports.calculationObjectRepository = () => {
                 query.finishDate = new Date(query.startDate)
                 query.finishDate.setDate(query.startDate.getDate() + 1)
             }
-            let existList = [
-                "voltage_A", "voltage_B", "voltage_C", "voltage_AB", "voltage_BC", "voltage_AC",
-                "current_A", "current_B", "current_C",
-                "frequency",
-                "active-power_A", "active-power_B", "active-power_C", "active-power_total",
-                "reactive-power_A", "reactive-power_B", "reactive-power_C", "reactive-power_total",
-                "full-power_A", "full-power_B", "full-power_C", "full-power_total",
-                "coef-active-power_A", "coef-active-power_B", "coef-active-power_C", "coef-active-power_total",
-                "coef-reactive-power_A", "coef-reactive-power_B", "coef-reactive-power_C", "coef-reactive-power_total"
-            ]
+            let existList = all_short_name()
             const limit = query && query.limit ? query.limit : 150
             let subPipArray = [
                 {
@@ -359,7 +352,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function findOneGraphAndObjectArchive(id, query) {
         try {
-            let existList = query && query.selectedParameters ? query.selectedParameters : ["energyarchive_A+", "energyarchive_A-", "energyarchive_R+", "energyarchive_R-"]
+            let existList = query && query.selectedParameters ? query.selectedParameters : energyarchive
 
             const limit = query && query.limit ? query.limit : 150
             let subPipArray = [
@@ -480,17 +473,7 @@ module.exports.calculationObjectRepository = () => {
     async function findOneGraphAndObjectCurrent(id, query) {
         try {
             let modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
-            let existList = query && query.selectedParameters ? query.selectedParameters : [
-                "energycurrent_A+", "energycurrent_A-", "energycurrent_R+", "energycurrent_R-",
-                "voltage_A", "voltage_B", "voltage_C", "voltage_AB", "voltage_BC", "voltage_AC",
-                "current_A", "current_B", "current_C",
-                "frequency",
-                "active-power_A", "active-power_B", "active-power_C", "active-power_total",
-                "reactive-power_A", "reactive-power_B", "reactive-power_C", "reactive-power_total",
-                "full-power_A", "full-power_B", "full-power_C", "full-power_total",
-                "coef-active-power_A", "coef-active-power_B", "coef-active-power_C", "coef-active-power_total",
-                "coef-reactive-power_A", "coef-reactive-power_B", "coef-reactive-power_C", "coef-reactive-power_total"
-            ]
+            let existList = query && query.selectedParameters ? query.selectedParameters : all_short_name()
 
             const limit = query && query.limit ? query.limit : 150
             let subPipArray = [
@@ -617,7 +600,7 @@ module.exports.calculationObjectRepository = () => {
     async function findOneAndDataList(id, query) {
         try {
             let modelname = 'parameter_values'
-            let existList = query.selectedParameters ? query.selectedParameters : ["energytotal_A+", "energytotal_A-", "energytotal_R+", "energytotal_R-"]
+            let existList = query.selectedParameters ? query.selectedParameters : energytotal
 
             if (query.type === "current") {
                 modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
@@ -743,7 +726,7 @@ module.exports.calculationObjectRepository = () => {
 
     async function findOneAndDashboard(id, query, type) {
         try {
-            const existList = query.selectedParameters ? query.selectedParameters : ["energyarchive_A+", "energyarchive_A-", "energyarchive_R+", "energyarchive_R-"]
+            const existList = query.selectedParameters ? query.selectedParameters : energyarchive
             const year = query.year ? query.year : new Date().getFullYear()
             const month = query.month ? query.month : new Date().getMonth()
             let subPipArrayDaily = [

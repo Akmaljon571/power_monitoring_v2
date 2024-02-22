@@ -1,5 +1,5 @@
 const Joi = require("joi")
-const { connection_channel_enum } = require("../global/enum")
+const { connection_channel_uspd_enum } = require("../global/enum")
 
 module.exports.uspdCreateJoi = Joi.object().keys({
     name: Joi.string().required(), 
@@ -8,7 +8,7 @@ module.exports.uspdCreateJoi = Joi.object().keys({
     timeDifference: Joi.string().required(),
     login: Joi.string().required(),
     password: Joi.string().required(),
-    connection_channel: Joi.valid(...connection_channel_enum).required()
+    connection_channel: Joi.valid(...connection_channel_uspd_enum).required()
 }).required()
             
 module.exports.uspdUpdateJoi = Joi.object().keys({
@@ -18,5 +18,5 @@ module.exports.uspdUpdateJoi = Joi.object().keys({
     timeDifference: Joi.string(),
     login: Joi.string(),
     password: Joi.string(),
-    connection_channel: Joi.valid(...connection_channel_enum)
+    connection_channel: Joi.valid(...connection_channel_uspd_enum)
 }).required()

@@ -1,3 +1,4 @@
+const { energyarchive, real_time_variable } = require('../global/variable')
 const { repositories } = require('../repository')
 const { serialPort } = require('../server/utils/serialport/serialport')
 const { previousCheking } = require('./previous')
@@ -8,11 +9,11 @@ let bool = true
 module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     if (status === 'run-app') {
         bool = false
-        await previousCheking()
+        // await previousCheking()
     }
 
     bool = true
-    // await getDataFromMiddleware(sendMessage, realTime)
+    await getDataFromMiddleware(sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (sendMessage, realTime) => {
@@ -116,10 +117,10 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
 
             const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "archive" } })
             const shotchik = meters.find(e => String(e._id) == String(meter._id)).parameters
-            let activePowerPlus = shotchik.find(e => e.param_short_name === 'energyarchive_A+')
-            let activePowerMinus = shotchik.find(e => e.param_short_name === 'energyarchive_A-')
-            let reactivePowerPlus = shotchik.find(e => e.param_short_name === 'energyarchive_R+')
-            let reactivePowerMinus = shotchik.find(e => e.param_short_name === 'energyarchive_R-')
+            let activePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[0])
+            let activePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[1])
+            let reactivePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[2])
+            let reactivePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[3])
 
             const newDate = new Date()
             const requestString = requestArchive(meter, newDate, newDate)
@@ -261,15 +262,17 @@ const currentData = async (meter, list, sendMessage, realTime) => {
         const modelDate = "" + date.getFullYear() + date.getMonth()
         const realTimeData = { date: new Date(), "AP": "0", "RP": "0", "FP": "0", "CP": "0" }
         const valueList = []
+
+        const realTimeVariable = real_time_variable(meter.meter_type)
         for (let i = 0; i < list.length; i++) {
             let parameter = await repositories().parameterRepository().findOne({ channel_full_id: list[i], meter: meter._id })
-            if (list[i] == "1.8.3") {
+            if (list[i] == realTimeVariable[0]) {
                 realTimeData.AP = data[i][list[i]]
-            } else if (list[i] == "1.9.3") {
+            } else if (list[i] == realTimeVariable[1]) {
                 realTimeData.RP = data[i][list[i]]
-            } else if (list[i] == "1.10.3") {
+            } else if (list[i] == realTimeVariable[2]) {
                 realTimeData.FP = data[i][list[i]]
-            } else if (list[i] == "1.13.3") {
+            } else if (list[i] == realTimeVariable[3]) {
                 realTimeData.CP = data[i][list[i]]
             }
 

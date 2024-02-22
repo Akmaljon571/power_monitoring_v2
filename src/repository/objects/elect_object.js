@@ -2,6 +2,7 @@ const mongoose = require("mongoose")
 const { electObjectModel, folderModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 const { parameterShortNamesList_enum } = require("../../validation/meter")
+const { energyarchive, energytotal } = require("../../global/variable")
 
 module.exports.electObjectRepository = () => {
     return Object.freeze({
@@ -478,7 +479,7 @@ module.exports.electObjectRepository = () => {
 
     async function findOneGraphAndObjectArchive(id, query) {
         try {
-            let existList = query && query.selectedParameters ? query.selectedParameters : ["energyarchive_A+", "energyarchive_A-", "energyarchive_R+", "energyarchive_R-"]
+            let existList = query && query.selectedParameters ? query.selectedParameters : energyarchive
             const limit = query && query.limit ? query.limit : 150
             let subPipArray = [
                 {
@@ -728,7 +729,7 @@ module.exports.electObjectRepository = () => {
     async function findOneAndDataList(id, query) {
         try {
             let modelname = 'parameter_values'
-            let existList = query.selectedParameters ? JSON.parse(query.selectedParameters) : ["energytotal_A+", "energytotal_A-", "energytotal_R+", "energytotal_R-"]
+            let existList = query.selectedParameters ? JSON.parse(query.selectedParameters) : energytotal
             if (query.type === "current") {
                 modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
             }
@@ -854,7 +855,7 @@ module.exports.electObjectRepository = () => {
 
     async function findOneAndDashboard(id, query, type) {
         try {
-            const existList = query.selectedParameters ? query.selectedParameters : ["energyarchive_A+", "energyarchive_A-", "energyarchive_R+", "energyarchive_R-"]
+            const existList = query.selectedParameters ? query.selectedParameters : energyarchive
             const year = query.year ? query.year : new Date().getFullYear()
             const month = query.month ? query.month : new Date().getMonth()
             let subPipArrayDaily = [
@@ -1023,7 +1024,7 @@ module.exports.electObjectRepository = () => {
         
             let startDate = query.startDate
             let finishDate = query.finishDate
-            let existList = ["energyarchive_A+","energyarchive_R+"]
+            let existList = [energyarchive[0], energyarchive[2]] 
             let subPipArray = [
                 {
                     $match: {

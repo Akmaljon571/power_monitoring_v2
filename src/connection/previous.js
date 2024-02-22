@@ -23,10 +23,10 @@ const archiveFill = async (meter, oldDate) => {
 
         const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "archive" } })
         const shotchik = meters.find(e => String(e._id) == String(meter._id)).parameters
-        let activePowerPlus = shotchik.find(e => e.param_short_name === 'energyarchive_A+')
-        let activePowerMinus = shotchik.find(e => e.param_short_name === 'energyarchive_A-')
-        let reactivePowerPlus = shotchik.find(e => e.param_short_name === 'energyarchive_R+')
-        let reactivePowerMinus = shotchik.find(e => e.param_short_name === 'energyarchive_R-')
+        let activePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[0])
+        let activePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[1])
+        let reactivePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[2])
+        let reactivePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[3])
 
         const requestString = requestArchive(meter, previousDate, yesterday)
         const data = await serialPort(requestString)

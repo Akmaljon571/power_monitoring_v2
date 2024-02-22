@@ -1,3 +1,6 @@
+const { all_short_name } = require("../global/file-path")
+const { vectorMultiplyVoltage, vectorMultiplyCurrent, energyarchive } = require("../global/variable")
+
 module.exports.sortvalueObjectsForVectorDiagram = async (parameters, query) => {
     try {
         const result = new Map()
@@ -245,7 +248,7 @@ module.exports.sortvalueObjectsForFirstReport =  (parameters, tariffs) => {
                 if (result.has(currentElementKey)) {
                     valueObject = multiplyTcAndTT(parameter.multiply, parameter.param_details.param_short_name, valueObject)
                     let lastObject = result.get(currentElementKey)
-                    if (parameter.param_details.param_short_name === "energyarchive_A+") {
+                    if (parameter.param_details.param_short_name === energyarchive[0]) {
                         if (currentElementDate.getHours() > 6 && currentElementDate.getHours() <= 9) {
                             lastObject.first_tariff = lastObject.first_tariff + valueObject.value
                         } else if (currentElementDate.getHours() > 9 && currentElementDate.getHours() <= 17) {
@@ -256,14 +259,14 @@ module.exports.sortvalueObjectsForFirstReport =  (parameters, tariffs) => {
                             lastObject.fourth_tariff = lastObject.fourth_tariff + valueObject.value
                         }
                         lastObject.general_aplus = lastObject.general_aplus + valueObject.value
-                    } else if (parameter.param_details.param_short_name === "energyarchive_R+") {
+                    } else if (parameter.param_details.param_short_name === energyarchive[2]) {
                         lastObject.general_rplus = lastObject.general_rplus + valueObject.value
                     }
                     result.set(currentElementKey, lastObject)
                 } else {
                     valueObject = multiplyTcAndTT(parameter.multiply, parameter.param_details.param_short_name, valueObject)
                     let lastObject = { first_tariff: 0, second_tariff: 0, third_tariff: 0, fourth_tariff: 0, general_aplus: 0, general_rplus: 0 }
-                    if (parameter.param_details.param_short_name === "energyarchive_A+") {
+                    if (parameter.param_details.param_short_name === energyarchive[0]) {
                         if (currentElementDate.getHours() > 6 && currentElementDate.getHours() <= 9) {
                             lastObject.first_tariff = lastObject.first_tariff + valueObject.value
                         } else if (currentElementDate.getHours() > 9 && currentElementDate.getHours() <= 17) {
@@ -274,7 +277,7 @@ module.exports.sortvalueObjectsForFirstReport =  (parameters, tariffs) => {
                             lastObject.fourth_tariff = lastObject.fourth_tariff + valueObject.value
                         }
                         lastObject.general_aplus = lastObject.general_aplus + valueObject.value
-                    } else if (parameter.param_details.param_short_name === "energyarchive_R+") {
+                    } else if (parameter.param_details.param_short_name === energyarchive[2]) {
                         lastObject.general_rplus = lastObject.general_rplus + valueObject.value
                     }
                     result.set(currentElementKey, lastObject)
@@ -289,30 +292,16 @@ module.exports.sortvalueObjectsForFirstReport =  (parameters, tariffs) => {
     }
 }
 
-const parameterShortNamesList = [
-    'energyarchive_A+','energyarchive_A-','energyarchive_R+','energyarchive_R-',
-    "frequency",'active-power_A','active-power_B', 'active-power_C',
-    "coef-active-power_A","coef-active-power_B","coef-active-power_C","coef-active-power_total",
-    "coef-reactive-power_A","coef-reactive-power_B","coef-reactive-power_C","coef-reactive-power_total",
-    "coef-angel_A", "coef-angel_B", "coef-angel_C","coef-angel_AB", "coef-angel_BC", "coef-angel_CA",
-    "total_A+_1", "total_A+_2", "total_A+_3", "total_A+_4",
-    "total_A-_1", "total_A-_2", "total_A-_3", "total_A-_4",
-    "total_R+_1", "total_R+_2", "total_R+_3", "total_R+_4",
-    "total_R-_1", "total_R-_2", "total_R-_3", "total_R-_4",'reactive-power_A', 'reactive-power_B', 'active-power_total',
-    'full-power_A','full-power_B','full-power_C','energytotal_A+_1','energytotal_A+_2','energytotal_A+_3','energytotal_A+_4',
-    'energytotal_A-_1','energytotal_A-_2','energytotal_A-_3','energytotal_A-_4','energytotal_R+','energytotal_R-',
-    'energytotal_R+_1','energytotal_R+_2','energytotal_R+_3','energytotal_R+_4','energytotal_R-_1','energytotal_R-_2',
-    'energytotal_R-_3','energytotal_R-_4','energycurrent_A+','energycurrent_A-','energycurrent_R+','energycurrent_R-',
-    'frequency',"coef-active-power_A",'reactive-power_C','reactive-power_total','full-power_total','energytotal_A+','energytotal_A-', ]
+const parameterShortNamesList = all_short_name()
 
 function multiplyTcAndTT(multiply, name, valueObject) {
     if(parameterShortNamesList.includes(name)) {
         multiply.map(element => valueObject.value = Math.round(valueObject.value * element * 1000) / 1000)
-    } else if (['voltage_A','voltage_B','voltage_C'].includes(name)){
+    } else if (vectorMultiplyVoltage.includes(name)){
         if (multiply && multiply[1]) {
             valueObject.value = Math.round(valueObject.value * multiply[1] * 1000) / 1000
         }
-    } else if (['current_A','current_B','current_C'].includes(name)){
+    } else if (vectorMultiplyCurrent.includes(name)){
         if (multiply && multiply[0]) {
             valueObject.value = Math.round(valueObject.value * multiply[0] * 1000) / 1000
         }
