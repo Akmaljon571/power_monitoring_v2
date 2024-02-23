@@ -32,29 +32,28 @@ const archiveFill = async (meter, oldDate) => {
         const data = await serialPort(requestString)
 
         let valuesList = []
-        let divide = 1
 
         data.map((element) => {
             const [day, month, year, hours, minutes] = element?.date?.split(/[^\d]+/);
             const date = new Date(`20${year}`, month - 1, day, hours, minutes)
             let activePowerValue = {
                 date,
-                value: Number(element.profile1) / divide,
+                value: Number(element.profile1),
                 parameter: activePowerPlus._id
             }
             let activePowerValueMinus = {
                 date,
-                value: Number(element.profile2) / divide,
+                value: Number(element.profile2),
                 parameter: activePowerMinus._id
             }
             let reactivePowerValue = {
                 date,
-                value: Number(element.profile3) / divide,
+                value: Number(element.profile3),
                 parameter: reactivePowerPlus._id
             }
             let reactivePowerValueMinus = {
                 date,
-                value: Number(element.profile4) / divide,
+                value: Number(element.profile4),
                 parameter: reactivePowerMinus._id
             }
             valuesList.push(activePowerValue, reactivePowerValue, activePowerValueMinus, reactivePowerValueMinus)

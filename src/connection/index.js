@@ -27,7 +27,7 @@ const getDataFromMiddleware = async (sendMessage, realTime) => {
                         parameterIds.push(`${param.channel_full_id}`)
                     }
                 })
-                await checkDate(meters[i], parameterIds, 'ok', sendMessage, realTime).then(console.log)
+                await checkDate(meters[i], parameterIds, sendMessage, realTime).then(console.log)
             }
             await getDataFromMiddleware(sendMessage, realTime)
         }
@@ -62,11 +62,11 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
                 datatime.setMonth(datatime.getMonth() - 1)
 
                 const result = Math.abs(datatime - new Date())
+
                 if ((result / 1000) <= meter.time_difference) {
                     console.log('date o`tdi')
                     sendMessage(meter._id, 'end', 'date')
-                await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime)
-                    .then((res) => {
+                    await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime).then((res) => {
                         console.log(res)
                         resolve('ok')
                     })
@@ -117,7 +117,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
                 })
                 return
             }
-            
+
             const newDate = new Date(2024, 1, 22)
             const requestString = requestArchive(meter, newDate, newDate)
             sendMessage(meter._id, 'send', 'archive')
@@ -133,12 +133,12 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
                 const date = dateTime(element?.date)
                 const time = dateTime(data[1].date) - dateTime(data[0].date)
                 const today = new Date()
-                
+
                 const check1 = today - new Date(new Date(checkTime.last_add).setUTCMilliseconds(time)) > 0
                 const check2 = date - today < 0
-                
+
                 if (check1 && check2) {
-                    if(element?.profile1) {
+                    if (element?.profile1) {
                         let activePowerValue = {
                             date,
                             value: Number(element.profile1),
@@ -146,7 +146,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
                         }
                         valuesList.push(activePowerValue)
                     }
-                    if(element?.profile2){
+                    if (element?.profile2) {
                         let activePowerValueMinus = {
                             date,
                             value: Number(element.profile2),
@@ -154,7 +154,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
                         }
                         valuesList.push(activePowerValueMinus)
                     }
-                    if(element?.profile3) {
+                    if (element?.profile3) {
                         let reactivePowerValue = {
                             date,
                             value: Number(element.profile3),
@@ -162,7 +162,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
                         }
                         valuesList.push(reactivePowerValue)
                     }
-                    if(element?.profile4){
+                    if (element?.profile4) {
                         let reactivePowerValueMinus = {
                             date,
                             value: Number(element.profile4),
@@ -307,50 +307,56 @@ const billingData = async (meter, parameterIds, sendMessage, realTime) => {
 
 const currentData = async (meter, list, sendMessage, realTime) => {
     return new Promise(async (resolve, reject) => {
-        let journalParameter = {
-            meter: meter._id,
-            request_type: "current",
-            status: "sent"
-        }
-        sendMessage(meter._id, 'send', 'current')
-        let newJournalDocument = await repositories().journalRepository().insert(journalParameter)
+        try {
+            let journalParameter = {
+                meter: meter._id,
+                request_type: "current",
+                status: "sent"
+            }
+            sendMessage(meter._id, 'send', 'current')
+            let newJournalDocument = await repositories().journalRepository().insert(journalParameter)
 
-        const requestString = requestCurrent(meter, list)
-        console.log(requestString)
-        const data = await serialPort(requestString)
+            const requestString = requestCurrent(meter, list)
+            console.log(requestString)
+            const data = await serialPort(requestString)
 
-        const date = new Date()
-        const modelDate = "" + date.getFullYear() + date.getMonth()
-        const realTimeData = { date: new Date(), "AP": "0", "RP": "0", "FP": "0", "CP": "0" }
-        const valueList = []
+            const date = new Date()
+            const modelDate = "" + date.getFullYear() + date.getMonth()
+            const realTimeData = { date: new Date(), "AP": "0", "RP": "0", "FP": "0", "CP": "0" }
+            const valueList = []
 
-        const realTimeVariable = real_time_variable(meter.meter_type)
-        for (let i = 0; i < list.length; i++) {
-            let parameter = await repositories().parameterRepository().findOne({ channel_full_id: list[i], meter: meter._id })
-            if (list[i] == realTimeVariable[0]) {
-                realTimeData.AP = data[i][list[i]]
-            } else if (list[i] == realTimeVariable[1]) {
-                realTimeData.RP = data[i][list[i]]
-            } else if (list[i] == realTimeVariable[2]) {
-                realTimeData.FP = data[i][list[i]]
-            } else if (list[i] == realTimeVariable[3]) {
-                realTimeData.CP = data[i][list[i]]
+            const realTimeVariable = real_time_variable(meter.meter_type)
+            for (let i = 0; i < list.length; i++) {
+                let parameter = await repositories().parameterRepository().findOne({ channel_full_id: list[i], meter: meter._id })
+                if (list[i] == realTimeVariable[0]) {
+                    realTimeData.AP = data[i][list[i]]
+                } else if (list[i] == realTimeVariable[1]) {
+                    realTimeData.RP = data[i][list[i]]
+                } else if (list[i] == realTimeVariable[2]) {
+                    realTimeData.FP = data[i][list[i]]
+                } else if (list[i] == realTimeVariable[3]) {
+                    realTimeData.CP = data[i][list[i]]
+                }
+
+                if (parameter) {
+                    const result = { value: data[i][list[i]], date, parameter: parameter._id }
+                    valueList.push(result)
+                } else {
+                    console.log('parameter not found')
+                }
             }
 
-            if (parameter) {
-                const result = { value: data[i][list[i]], date, parameter: parameter._id }
-                valueList.push(result)
-            } else {
-                console.log('parameter not found')
-            }
+            await repositories().parameterValueRepository().insert(modelDate, valueList).then(async () => {
+                realTime(realTimeData)
+                await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "succeed" })
+                sendMessage(meter._id, "end", 'current')
+            }).finally(() => {
+                resolve('ok')
+            })
+        } catch (error) {
+            console.log(error)
+            sendMessage(meter._id, 'Error', 'current')
+            resolve('error')
         }
-
-        await repositories().parameterValueRepository().insert(modelDate, valueList).then(async () => {
-            realTime(realTimeData)
-            await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "succeed" })
-            sendMessage(meter._id, "end", 'current')
-        }).finally(() => {
-            resolve('ok')
-        })
     })
 }
