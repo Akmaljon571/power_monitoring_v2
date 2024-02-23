@@ -13,7 +13,7 @@ module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     }
 
     bool = true
-    // await getDataFromMiddleware(sendMessage, realTime)
+    await getDataFromMiddleware(sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (sendMessage, realTime) => {
@@ -125,7 +125,8 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
             const requestString = requestArchive(meter, newDate, newDate)
             const data = await serialPort(requestString)
             sendMessage(meter._id, 'send', 'archive')
-
+            console.log(data)
+            
             let valuesList = []
 
             data.map((element) => {
@@ -338,15 +339,3 @@ const currentData = async (meter, list, sendMessage, realTime) => {
         })
     })
 }
-
-
-(async() => {
-    console.log({startDate: new Date(2024, 1, 4), finishDate: new Date(2024, 1, 20)})
-    const result = await repositories().electObjectRepository().firstTemplateReport('65d600a56458a5081f78a7c8', { startDate: new Date(2024, 1, 4), finishDate: new Date(2024, 1, 20)})
-    console.log(result)
-})()
-
-// Osha funksiya boyicha feederlar va meterlar royxati qolimga tushadi.
-// keyin osha boyicha billinglarni olaman va A+ dagi barcha ma'lumotlarni berib yubaraman
-// R+ ni esa koffisentga kopaytirib chiqaraman
-// 

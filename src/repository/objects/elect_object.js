@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const { electObjectModel, folderModel } = require("../../models")
+const { electObjectModel, folderModel, billingModel, parameterModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 const { parameterShortNamesList_enum } = require("../../validation/meter")
 const { energyarchive, energytotal } = require("../../global/variable")
@@ -1021,114 +1021,84 @@ module.exports.electObjectRepository = () => {
 
     async function firstTemplateReport(id, query) {
         try {
-            let existList = [energyarchive[0], energyarchive[2]]
-            
             let startDate = new Date(query.startDate)
             let finishDate = new Date(query.finishDate)
+
             startDate.setUTCHours(0, 0, 0, 0)
             finishDate.setUTCHours(0, 0, 0, 0)
-            startDate.setDate(startDate.getDate() +1)
-            finishDate.setDate(finishDate.getDate() +1)
+            startDate.setDate(startDate.getDate() + 1)
+            finishDate.setDate(finishDate.getDate() + 1)
 
-            let subPipArray = [
-                {
-                    $match: {
-                        date: {
-                            $gte: startDate,
-                            $lt: finishDate
-                        },
-                    },
-                }
-            ]
+            const meters = []
 
-            const electObjectPipelines = [
-                {
-                    $match: {
-                        _id: new mongoose.Types.ObjectId(id)
-                    }
-                },
-                {
-                    $unwind: {
-                        path: "$parameters",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "parameters",
-                        localField: "parameters.parameter_id",
-                        foreignField: "_id",
-                        as: "parameters.param_details"
-                    }
-                },
-                {
-                    $unwind: {
-                        path: "$parameters.param_details",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    "$group": {
-                        "_id": "$_id",
-                        "parameters": {
-                            "$push": "$parameters"
-                        },
-                        "name": { $first: "$name" },
-                        "type": { $first: "$type" },
-                        "createdAt": { $first: "$createdAt" },
-                        "updatedAt": { $first: "$updatedAt" },
-                    }
-                },
-                {
-                    $project: {
-                        parameters: {
-                            $filter: {
-                                input: "$parameters",
-                                as: "param",
-                                cond: {
-                                    $in: [
-                                        "$$param.param_details.param_short_name",
-                                        existList
-                                    ]
-                                }
-                            }
-                        },
-                        name: 1,
-                        type: 1,
-                        createdAt: 1,
-                        updatedAt: 1,
-                        child_objects: 1
-                    }
-                },
-                {
-                    $unwind: "$parameters"
-                },
-                {
-                    $lookup: {
-                        from: "parameter_values",
-                        localField: "parameters.param_details._id",
-                        foreignField: "parameter",
-                        pipeline: subPipArray,
-                        as: "parameters.parameter_values"
-                    }
-                },
-                {
-                    "$group": {
-                        "_id": "$_id",
-                        "parameters": {
-                            "$push": "$parameters"
-                        },
-                        "name": { $first: "$name" },
-                        "type": { $first: "$type" },
-                        "createdAt": { $first: "$createdAt" },
-                        "updatedAt": { $first: "$updatedAt" },
-                        "child_objects": { $first: "$child_objects" }
+            const callback = async (id) => {
+                const data = await electObjectModel.find({ parent_object: id });
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i].type != 'meter') {
+                        await callback(data[i]._id)
+                    } else {
+                        if (data[i].type) {
+                            meters.push(data[i])
+                        }
                     }
                 }
-            ]
+            }
+            const element = await electObjectModel.findById(id)
+            if (element.type !== 'meter') {
+                await callback(id)
+            } else {
+                meters.push(element)
+            }
+            const result = new Map()
+            const paramA = await parameterModel.findOne({ param_short_name: energyarchive[0] })
+            const paramR = await parameterModel.findOne({ param_short_name: energyarchive[2] })
 
-            const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
-            return electObjectDocument[0]
+            for (let i = 0; i < meters.length; i++) {
+                let billingAll = await billingModel.find({ meter_id: meters[i].meter_id })
+                billingAll = billingAll.filter(e => e.date >= startDate && e.date <= finishDate)  
+                
+                for (let j = 0; j < billingAll.length; j++) {
+                    const billing = billingAll[j]
+                    const multiplyA = meters[i].parameters.find(e => String(paramA._id) == String(e.parameter_id))
+                    const multiplyR = meters[i].parameters.find(e => String(paramR._id) == String(e.parameter_id))
+                    let general_rplus = billing.summa_R1
+                    for (let i = 0; i < multiplyR.multiply.length; i++) {
+                        general_rplus *= multiplyR.multiply[i]
+                    }
+    
+                    if(!result.has(new Date(billing.date).getTime())) {
+                        const data = {
+                            first_tariff: billing.tarif1_A1,
+                            second_tariff: billing.tarif2_A1,
+                            third_tariff: billing.tarif3_A1,
+                            fourth_tariff: billing.tarif4_A1,
+                            general_aplus: billing.summa_A1,
+                            general_rplus
+                        }
+        
+                        result.set(new Date(billing.date).getTime(), data)
+                    } else {
+                        const obj = result.get(new Date(billing.date).getTime())
+
+                        if(multiplyA.sign) {
+                            obj.first_tariff += billing.tarif1_A1
+                            obj.second_tariff += billing.tarif2_A1
+                            obj.third_tariff += billing.tarif3_A1
+                            obj.fourth_tariff += billing.tarif4_A1
+                            obj.general_aplus += billing.summa_A1
+                            obj.general_rplus += general_rplus
+                        } else {
+                            obj.first_tariff -= billing.tarif1_A1
+                            obj.second_tariff -= billing.tarif2_A1
+                            obj.third_tariff -= billing.tarif3_A1
+                            obj.fourth_tariff -= billing.tarif4_A1
+                            obj.general_aplus -= billing.summa_A1
+                            obj.general_rplus -= general_rplus
+                        }
+                    }
+                }
+            }
+            return result
         } catch (err) {
             throw new CustomError(500, err.message)
         }
