@@ -338,3 +338,15 @@ const currentData = async (meter, list, sendMessage, realTime) => {
         })
     })
 }
+
+
+(async() => {
+    console.log({startDate: new Date(2024, 1, 4), finishDate: new Date(2024, 1, 20)})
+    const result = await repositories().electObjectRepository().firstTemplateReport('65d600a56458a5081f78a7c8', { startDate: new Date(2024, 1, 4), finishDate: new Date(2024, 1, 20)})
+    console.log(result)
+})()
+
+// Osha funksiya boyicha feederlar va meterlar royxati qolimga tushadi.
+// keyin osha boyicha billinglarni olaman va A+ dagi barcha ma'lumotlarni berib yubaraman
+// R+ ni esa koffisentga kopaytirib chiqaraman
+// 

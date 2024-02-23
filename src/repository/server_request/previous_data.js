@@ -13,7 +13,7 @@ module.exports.previousObjectRepository = () =>{
     async function insert(meter) {
         try {
             const date = new Date()
-            date.setHours(0,0,0,0)
+            date.setUTCHours(0,0,0,0)
             if(meter.data_polling_length) {
                 date.setDate(new Date().getDate() - Number(meter.data_polling_length))
             }

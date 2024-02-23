@@ -341,7 +341,7 @@ module.exports.electObjectRepository = () => {
             let modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
             if (query && query.paramDate) {
                 query.startDate = new Date(query.paramDate)
-                query.startDate.setUTCHours(0)
+                query.startDate.setUTCHours(0, 0, 0, 0)
                 query.finishDate = new Date(query.startDate)
                 query.finishDate.setDate(query.startDate.getDate() + 1)
             }
@@ -1128,7 +1128,6 @@ module.exports.electObjectRepository = () => {
             ]
 
             const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
-            console.log(electObjectDocument)
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
