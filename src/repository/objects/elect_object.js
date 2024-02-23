@@ -35,14 +35,14 @@ module.exports.electObjectRepository = () => {
 
     async function listUse() {
         try {
-            const list = await electObjectModel.find({ meter_id: { $exists: true }})
+            const list = await electObjectModel.find({ meter_id: { $exists: true } })
             const meters = await folderModel.find()
             const result = []
             let ids = []
             for (let i = 0; i < meters.length; i++) {
                 const find = list.map(e => String(e.meter_id))
-                if(!find.includes(String(meters[i].meter)) && !ids.includes(meters[i].meter) && meters[i].meter){
-                    result.push({id: String(meters[i].meter), name: meters[i].name})
+                if (!find.includes(String(meters[i].meter)) && !ids.includes(meters[i].meter) && meters[i].meter) {
+                    result.push({ id: String(meters[i].meter), name: meters[i].name })
                     ids.push(meters[i].meter)
                 }
             }
@@ -63,7 +63,7 @@ module.exports.electObjectRepository = () => {
 
     async function update(_id, query) {
         try {
-            const objectDocuments = await electObjectModel.updateOne({ _id }, { $set: query})
+            const objectDocuments = await electObjectModel.updateOne({ _id }, { $set: query })
             return objectDocuments
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -99,8 +99,8 @@ module.exports.electObjectRepository = () => {
 
     async function remove(id) {
         try {
-            const find = await electObjectModel.findOne({ parent_object: id }, )
-            if(find) {
+            const find = await electObjectModel.findOne({ parent_object: id },)
+            if (find) {
                 await electObjectModel.deleteOne({ _id: id })
                 remove(find._id)
             }
@@ -225,7 +225,7 @@ module.exports.electObjectRepository = () => {
                 }
             ]
 
-            if(query.type === 'feeder') {
+            if (query.type === 'feeder') {
                 pipArray.push(
                     {
                         $lookup: {
@@ -256,7 +256,7 @@ module.exports.electObjectRepository = () => {
                             path: "$elect_meter.meter",
                             preserveNullAndEmptyArrays: true
                         }
-                    }, 
+                    },
                     {
                         "$group": {
                             "_id": "$_id",
@@ -265,7 +265,7 @@ module.exports.electObjectRepository = () => {
                                 "$push": "$parameters"
                             },
                             "vt": { $first: "$elect_meter.vt" },
-                            "ct": { $first: "$elect_meter.ct"},
+                            "ct": { $first: "$elect_meter.ct" },
                             "type": { $first: "$type" },
                             "meter_type": { $first: "$elect_meter.meter.meter_type" },
                             "number_meter": { $first: "$elect_meter.meter.number_meter" },
@@ -1019,23 +1019,29 @@ module.exports.electObjectRepository = () => {
         }
     }
 
-    async function firstTemplateReport(id,query) {
+    async function firstTemplateReport(id, query) {
         try {
-        
-            let startDate = query.startDate
-            let finishDate = query.finishDate
-            let existList = [energyarchive[0], energyarchive[2]] 
+            let existList = [energyarchive[0], energyarchive[2]]
+            
+            let startDate = new Date(query.startDate)
+            let finishDate = new Date(query.finishDate)
+            startDate.setUTCHours(0, 0, 0, 0)
+            finishDate.setUTCHours(0, 0, 0, 0)
+            startDate.setDate(startDate.getDate() +1)
+            finishDate.setDate(finishDate.getDate() +1)
+
             let subPipArray = [
                 {
                     $match: {
-                        date: { 
-                            $gte: new Date(startDate),
-                             $lt: new Date(finishDate) },
+                        date: {
+                            $gte: startDate,
+                            $lt: finishDate
+                        },
                     },
                 }
             ]
-             
-             const electObjectPipelines = [
+
+            const electObjectPipelines = [
                 {
                     $match: {
                         _id: new mongoose.Types.ObjectId(id)
@@ -1119,11 +1125,11 @@ module.exports.electObjectRepository = () => {
                         "child_objects": { $first: "$child_objects" }
                     }
                 }
-             ]
+            ]
 
-             const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
-             return electObjectDocument[0]
-      
+            const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
+            console.log(electObjectDocument)
+            return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
         }

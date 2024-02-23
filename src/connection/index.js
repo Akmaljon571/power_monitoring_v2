@@ -13,7 +13,7 @@ module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     }
 
     bool = true
-    await getDataFromMiddleware(sendMessage, realTime)
+    // await getDataFromMiddleware(sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (sendMessage, realTime) => {
@@ -65,11 +65,11 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
                 // if ((result / 1000) <= meter.time_difference) {
                 //     console.log('date o`tdi')
                 //     sendMessage(meter._id, 'end', 'date')
-                    await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime)
-                        .then((res) => {
-                            console.log(res)
-                            resolve('ok')
-                        })
+                await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime)
+                    .then((res) => {
+                        console.log(res)
+                        resolve('ok')
+                    })
                 // } else {
                 //     await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "failed" })
                 //     sendMessage(meter._id, "Error", 'date')
@@ -204,7 +204,7 @@ const billingData = async (meter, parameterIds, sendMessage, realTime) => {
 
                 const newObj = { date, meter_id: meter._id, }
                 for (let i = 0; i < e.length; i++) {
-                        if(e[i]) {
+                    if (e[i]) {
                         switch (i) {
                             case 1:
                                 newObj["summa_A1"] = e[1]
