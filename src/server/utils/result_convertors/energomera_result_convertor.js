@@ -37,9 +37,10 @@ function getEnergomeraResult(data, key, opt) {
             case 'cosf':
             case 'tanf':
             return { [keyArg]: value[keyArgProp] || 'empty'};
+            case 'currentTime': return { [keyArg]:[  value[0] ] } 
             case 'currentDate':
-            const today = value[0].split(',');
-            return { [keyArg]: today.length != 1 ? `${today[0]} ${today[1].replace('.', '/')}` : value[0].split('.').slice(1).join('.') }
+            const today = value[0].split(',')
+            return { [keyArg]: today.length != 1 ? `${today[0]} ${today[1].replace('.', '/')}` : value[0].replace('.', '/') }
             case 'lst':
             return { [newKey]: value || 'empty'};
             case '3.0':
@@ -106,8 +107,6 @@ function createResultA_R(params) {
         }
     })
 }
-
-
 
 function createResultA_R_Current(params) {
     const [data, ...tarifs] = params

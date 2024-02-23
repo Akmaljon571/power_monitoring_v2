@@ -27,7 +27,20 @@ function readCECounterOBIS(obis, options, key) {
 						throw new Error("check API's parametors")
 					}
 				})
-				return commandsCE(newObis, options)
+				let checkKey = '1.15,0_currentDate'
+				let obisCode = commandsCE(newObis, options)
+				let checkValue = findKeyIndexAndValue(obisCode, checkKey)
+				if (!checkValue?.exist) {
+					return obisCode
+				} else {
+					let index = checkValue?.index
+					const newParams = [ 
+						{ [checkKey]: checkValue?.value.date },
+						{ '1.16,0_currentTime': checkValue?.value.time }
+					]
+					obisCode.splice(index, 1, ...newParams)
+					return obisCode
+				}
 			} else if (obis.includes('3.0') && !obis.includes('2.0') && !verify) {
 				return commandsCE(CE_Counter_Commands.loadProfile, options)
 			}
@@ -61,5 +74,21 @@ function insertArgsIntoArray(array, args, index = 0) {
 
 module.exports = {
 	readCECounterOBIS,
-	insertArgsIntoArray
+	insertArgsIntoArray,
+	findKeyIndexAndValue
+}
+
+function findKeyIndexAndValue(array, key) {
+  for (let i = 0; i < array.length; i++) {
+    const currentKey = Object.keys(array[i])[0];
+    if (currentKey === key) {
+      const value = Object.values(array[i])[0];
+      if (Array.isArray(value)) {
+        return { key: currentKey, index: i, value: value, exist: false };
+      } else if (typeof value === 'object') {
+        return { key: currentKey, index: i, value: value, exist: true };
+      }
+    }
+  }
+  return { key: key, index: -1, value: false }; // If key is not found
 }

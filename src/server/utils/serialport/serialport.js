@@ -9,6 +9,7 @@ const { dateConvertor, getDaysArray } = require('../dateUtils.js')
 const { getEnergomeraResult } = require('../result_convertors/energomera_result_convertor.js')
 const { getMercuryResult } = require('../result_convertors/mercury_result_convertor.js')
 const { getTE_73Result } = require('../result_convertors/TE_73CAS.js')
+const { findKeyIndexAndValue } = require('../obis_results/energomera_obis.js')
 
 let allowParametres = ['0.1_hashedPassword', '0.2_password', '0.0_version']
 let versionAllowed = ['0.1_hashedPassword', '0.2_password']
@@ -16,7 +17,7 @@ let onlyVerionAllow = ['version', 'password']
 
 async function getCounterResult(data) {
     try {
-        const result = []
+        let result = []
         const { setUp, tcpConnection, serialPort } = setConfig(data)
         
         const port = setUp?.connectionType === 1 ? tcpConnection : setUp?.connectionType === 0 ? new SerialPort(serialPort) : undefined
@@ -27,6 +28,7 @@ async function getCounterResult(data) {
         
         const getCommands = ObisQuery[`${type[0]}_Counter_Query`](data.ReadingRegister, setUp, 'obis')
         const startCommands = ObisQuery[`${type[0]}_Counter_Query`](null, setUp)
+        
         if (checkCounterExist('CE', setUp)) {
             for(let i of getCommands) {
                 if (!Object.values(i)[0].length) {
@@ -49,6 +51,19 @@ async function getCounterResult(data) {
                     startCommands.splice(3,1)
                     await closePort(port)
                 }
+            }
+            if (!findKeyIndexAndValue(result, '1.16.0')?.exist) {
+                let valuesToJoin = [];
+                let filteredArray = result.filter(obj => !('1.15.0' in obj || '1.16.0' in obj));
+                result.forEach(obj => {
+                    if ('1.15.0' in obj) {
+                        valuesToJoin.push(obj['1.15.0']);
+                    } else if ('1.16.0' in obj) {
+                        valuesToJoin.unshift(obj['1.16.0'][0]);
+                    }
+                });
+                filteredArray.push({ '1.15.0': valuesToJoin.join(' ') })
+                result = filteredArray
             }
         } else if (checkCounterExist('Mercury', setUp)) {
             for(let i of getCommands) {

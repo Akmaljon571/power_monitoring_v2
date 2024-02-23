@@ -77,6 +77,7 @@ const billingFill = async (meter, oldDate) => {
 
         const requestString = requestBilling(meter, previousDate, twoDayAgo)
         const data = await serialPort(requestString)
+
         const valueList = []
 
         data.map(e => {
@@ -153,7 +154,6 @@ const billingFill = async (meter, oldDate) => {
                     }
                 }
             }
-            console.log(newObj)
             valueList.push(newObj)
         })
         console.log(valueList.length, 'valueList billing')

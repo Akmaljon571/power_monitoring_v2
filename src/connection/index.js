@@ -27,9 +27,9 @@ const getDataFromMiddleware = async (sendMessage, realTime) => {
                         parameterIds.push(`${param.channel_full_id}`)
                     }
                 })
-                await checkDate(meters[i], parameterIds, sendMessage, realTime).then(console.log)
+                await checkDate(meters[i], parameterIds, 'ok', sendMessage, realTime).then(console.log)
             }
-            // await getDataFromMiddleware(sendMessage, realTime)
+            await getDataFromMiddleware(sendMessage, realTime)
         }
     } catch (err) {
         console.log(err);
@@ -55,26 +55,26 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
                 const requestString = requestDateTime(meter)
                 const data = await serialPort(requestString)
 
-                // const time = data[0]?.['1.15.0']?.split(' ')[0]
-                // const date = data[0]?.['1.15.0']?.split('/')[1].split('.').reverse()
-                // date[0] = '' + 20 + date[0]
-                // const datatime = new Date(...date.concat(time.split(':')))
-                // datatime.setMonth(datatime.getMonth() - 1)
+                const time = data[0]?.['1.15.0']?.split(' ')[0]
+                const date = data[0]?.['1.15.0']?.split('/')[1].split('.').reverse()
+                date[0] = '' + 20 + date[0]
+                const datatime = new Date(...date.concat(time.split(':')))
+                datatime.setMonth(datatime.getMonth() - 1)
 
-                // const result = Math.abs(datatime - new Date())
-                // if ((result / 1000) <= meter.time_difference) {
-                //     console.log('date o`tdi')
-                //     sendMessage(meter._id, 'end', 'date')
+                const result = Math.abs(datatime - new Date())
+                if ((result / 1000) <= meter.time_difference) {
+                    console.log('date o`tdi')
+                    sendMessage(meter._id, 'end', 'date')
                 await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime)
                     .then((res) => {
                         console.log(res)
                         resolve('ok')
                     })
-                // } else {
-                //     await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "failed" })
-                //     sendMessage(meter._id, "Error", 'date')
-                //     resolve('ok')
-                // }
+                } else {
+                    await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "failed" })
+                    sendMessage(meter._id, "Error", 'date')
+                    resolve('ok')
+                }
             }
 
             const date = new Date()
@@ -99,12 +99,16 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
 const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const checkTime = await repositories().parameterValueRepository().findTodayList(new Date())
-            await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
+            const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "archive" } })
+            const shotchik = meters.find(e => String(e._id) == String(meter._id)).parameters
+            let activePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[0])
+            let activePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[1])
+            let reactivePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[2])
+            let reactivePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[3])
+            const checkTime = await repositories().parameterValueRepository().findTodayList(new Date(), activePowerPlus._id)
 
             const last_add_time = new Date(checkTime.last_add)
             last_add_time.setUTCMilliseconds(checkTime.time);
-
             if (last_add_time - new Date() > 0) {
                 sendMessage(meter._id, 'end', 'archive')
                 await billingData(meter, parameterIds, sendMessage, realTime).then((res) => {
@@ -113,50 +117,61 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
                 })
                 return
             }
-
-            const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "archive" } })
-            const shotchik = meters.find(e => String(e._id) == String(meter._id)).parameters
-            let activePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[0])
-            let activePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[1])
-            let reactivePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[2])
-            let reactivePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[3])
-
-            const newDate = new Date()
-            const requestString = requestArchive(meter, newDate, newDate)
-            const data = await serialPort(requestString)
-            sendMessage(meter._id, 'send', 'archive')
-            console.log(data)
             
-            let valuesList = []
+            const newDate = new Date(2024, 1, 22)
+            const requestString = requestArchive(meter, newDate, newDate)
+            sendMessage(meter._id, 'send', 'archive')
+            const data = await serialPort(requestString)
 
+            const dateTime = (date) => {
+                const [day, month, year, hours, minutes] = date.split(/[^\d]+/);
+                return new Date(`20${year}`, month - 1, day, hours, minutes)
+            }
+
+            let valuesList = []
             data.map((element) => {
-                const [day, month, year, hours, minutes] = element?.date?.split(/[^\d]+/);
-                const date = new Date(`20${year}`, month - 1, day, hours, minutes)
-                if (date - new Date(checkTime.last_add) > 0 && element.status == 1) {
-                    let activePowerValue = {
-                        date,
-                        value: Number(element.profile1),
-                        parameter: activePowerPlus._id
+                const date = dateTime(element?.date)
+                const time = dateTime(data[1].date) - dateTime(data[0].date)
+                const today = new Date()
+                
+                const check1 = today - new Date(new Date(checkTime.last_add).setUTCMilliseconds(time)) > 0
+                const check2 = date - today < 0
+                
+                if (check1 && check2) {
+                    if(element?.profile1) {
+                        let activePowerValue = {
+                            date,
+                            value: Number(element.profile1),
+                            parameter: activePowerPlus._id
+                        }
+                        valuesList.push(activePowerValue)
                     }
-                    let activePowerValueMinus = {
-                        date,
-                        value: Number(element.profile2),
-                        parameter: activePowerMinus._id
+                    if(element?.profile2){
+                        let activePowerValueMinus = {
+                            date,
+                            value: Number(element.profile2),
+                            parameter: activePowerMinus._id
+                        }
+                        valuesList.push(activePowerValueMinus)
                     }
-                    let reactivePowerValue = {
-                        date,
-                        value: Number(element.profile3),
-                        parameter: reactivePowerPlus._id
+                    if(element?.profile3) {
+                        let reactivePowerValue = {
+                            date,
+                            value: Number(element.profile3),
+                            parameter: reactivePowerPlus._id
+                        }
+                        valuesList.push(reactivePowerValue)
                     }
-                    let reactivePowerValueMinus = {
-                        date,
-                        value: Number(element.profile4),
-                        parameter: reactivePowerMinus._id
+                    if(element?.profile4){
+                        let reactivePowerValueMinus = {
+                            date,
+                            value: Number(element.profile4),
+                            parameter: reactivePowerMinus._id
+                        }
+                        valuesList.push(reactivePowerValueMinus)
                     }
-                    valuesList.push(activePowerValue, reactivePowerValue, activePowerValueMinus, reactivePowerValueMinus)
                 }
             })
-
             console.log(valuesList.length, 'valueList Archive')
             sendMessage(meter._id, 'end', 'archive')
 
