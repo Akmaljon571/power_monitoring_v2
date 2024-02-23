@@ -1,6 +1,6 @@
 const { Socket } = require('net');
 const { InterByteTimeoutParser } = require('@serialport/parser-inter-byte-timeout');
-const { queryMaker, checkCrcIs } = require('../crc.js');
+const { queryMaker, checkCrcIs } = require('./crc.js');
 
 const socket = new Socket();
 

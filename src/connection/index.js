@@ -13,7 +13,7 @@ module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     }
 
     bool = true
-    // await getDataFromMiddleware(sendMessage, realTime)
+    await getDataFromMiddleware(sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (sendMessage, realTime) => {
@@ -27,10 +27,9 @@ const getDataFromMiddleware = async (sendMessage, realTime) => {
                         parameterIds.push(`${param.channel_full_id}`)
                     }
                 })
-                await checkDate(meters[0], parameterIds, sendMessage, realTime).then(async (res) => {
-                    await getDataFromMiddleware(sendMessage, realTime)
-                })
+                await checkDate(meters[i], parameterIds, sendMessage, realTime).then(console.log)
             }
+            // await getDataFromMiddleware(sendMessage, realTime)
         }
     } catch (err) {
         console.log(err);
@@ -56,26 +55,26 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
                 const requestString = requestDateTime(meter)
                 const data = await serialPort(requestString)
 
-                const time = data[0]?.['1.15.0']?.split(' ')[0]
-                const date = data[0]?.['1.15.0']?.split('/')[1].split('.').reverse()
-                date[0] = '' + 20 + date[0]
-                const datatime = new Date(...date.concat(time.split(':')))
-                datatime.setMonth(datatime.getMonth() - 1)
+                // const time = data[0]?.['1.15.0']?.split(' ')[0]
+                // const date = data[0]?.['1.15.0']?.split('/')[1].split('.').reverse()
+                // date[0] = '' + 20 + date[0]
+                // const datatime = new Date(...date.concat(time.split(':')))
+                // datatime.setMonth(datatime.getMonth() - 1)
 
-                const result = Math.abs(datatime - new Date())
-                if ((result / 1000) <= meter.time_difference) {
-                    console.log('date o`tdi')
-                    sendMessage(meter._id, 'end', 'date')
+                // const result = Math.abs(datatime - new Date())
+                // if ((result / 1000) <= meter.time_difference) {
+                //     console.log('date o`tdi')
+                //     sendMessage(meter._id, 'end', 'date')
                     await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime)
                         .then((res) => {
                             console.log(res)
                             resolve('ok')
                         })
-                } else {
-                    await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "failed" })
-                    sendMessage(meter._id, "Error", 'date')
-                    resolve('ok')
-                }
+                // } else {
+                //     await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "failed" })
+                //     sendMessage(meter._id, "Error", 'date')
+                //     resolve('ok')
+                // }
             }
 
             const date = new Date()
@@ -159,10 +158,11 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
 
             console.log(valuesList.length, 'valueList Archive')
             sendMessage(meter._id, 'end', 'archive')
+
             await billingData(meter, parameterIds, sendMessage, realTime).then(async () => {
                 await repositories().parameterValueRepository().insert(false, valuesList)
                 await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
-                await repositories().previousObjectRepository().update(meter._id, last_add_time)
+                await repositories().previousObjectRepository().update(meter._id, new Date())
             }).finally(() => {
                 resolve('ok')
             })
@@ -194,6 +194,7 @@ const billingData = async (meter, parameterIds, sendMessage, realTime) => {
             sendMessage(meter._id, 'send', 'billing')
 
             const valueList = []
+
             data.map(e => {
                 const dateFormat = e[0].split('.').reverse()
                 dateFormat[0] = "" + "20" + dateFormat[0]
@@ -201,31 +202,75 @@ const billingData = async (meter, parameterIds, sendMessage, realTime) => {
                 date.setUTCHours(0, 0, 0, 0)
                 date.setDate(date.getDate() + 1)
 
-                const obj = {
-                    summa_A1: e[1],
-                    summa_A0: e[2],
-                    summa_R0: e[3],
-                    summa_R1: e[4],
-                    tarif1_A1: e[5],
-                    tarif2_A1: e[6],
-                    tarif3_A1: e[7],
-                    tarif4_A1: e[8],
-                    tarif1_A0: e[9],
-                    tarif2_A0: e[10],
-                    tarif3_A0: e[11],
-                    tarif4_A0: e[12],
-                    tarif1_R1: e[13],
-                    tarif2_R1: e[14],
-                    tarif3_R1: e[15],
-                    tarif4_R1: e[16],
-                    tarif1_R0: e[17],
-                    tarif2_R0: e[18],
-                    tarif3_R0: e[19],
-                    tarif4_R0: e[20],
-                    meter_id: meter._id,
-                    date
+                const newObj = { date, meter_id: meter._id, }
+                for (let i = 0; i < e.length; i++) {
+                        if(e[i]) {
+                        switch (i) {
+                            case 1:
+                                newObj["summa_A1"] = e[1]
+                                break;
+                            case 2:
+                                newObj["summa_A0"] = e[2]
+                                break;
+                            case 3:
+                                newObj["summa_R1"] = e[3]
+                                break;
+                            case 4:
+                                newObj["summa_R0"] = e[4]
+                                break;
+                            case 5:
+                                newObj["tarif1_A1"] = e[5]
+                                break;
+                            case 6:
+                                newObj["tarif2_A1"] = e[6]
+                                break;
+                            case 7:
+                                newObj["tarif3_A1"] = e[7]
+                                break;
+                            case 8:
+                                newObj["tarif4_A1"] = e[8]
+                                break;
+                            case 9:
+                                newObj["tarif1_A0"] = e[9]
+                                break;
+                            case 10:
+                                newObj["tarif2_A0"] = e[10]
+                                break;
+                            case 11:
+                                newObj["tarif3_A0"] = e[11]
+                                break;
+                            case 12:
+                                newObj["tarif4_A0"] = e[12]
+                                break;
+                            case 13:
+                                newObj["tarif1_R1"] = e[13]
+                                break;
+                            case 14:
+                                newObj["tarif2_R1"] = e[14]
+                                break;
+                            case 15:
+                                newObj["tarif3_R1"] = e[15]
+                                break;
+                            case 16:
+                                newObj["tarif4_R1"] = e[16]
+                                break;
+                            case 17:
+                                newObj["tarif1_R0"] = e[17]
+                                break;
+                            case 18:
+                                newObj["tarif2_R0"] = e[18]
+                                break;
+                            case 19:
+                                newObj["tarif3_R0"] = e[19]
+                                break;
+                            case 20:
+                                newObj["tarif4_R0"] = e[20]
+                                break;
+                        }
+                    }
                 }
-                valueList.push(obj)
+                console.log(newObj)
+                valueList.push(newObj)
             })
             console.log(valueList.length, 'valueList billing')
             sendMessage(meter._id, 'end', 'billing')

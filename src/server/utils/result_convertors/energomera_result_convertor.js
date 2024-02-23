@@ -10,17 +10,21 @@ function getEnergomeraResult(data, key, opt) {
             value = [data]
         }
         
+        
         let [keyArg, newKey] = key.split('_')
         let keyArgProp = keyArg.split(',')[1]
         keyArg = keyArg.replace(/,(?=[^,]*$)/, '.')
         newKey = ['2.0', '3.0'].includes(key) ? key : newKey
         
+        // if (key != 'version') {
+        //     console.log(newKey, value)
+        // }
         switch (newKey) {
             case 'version':
-                const versionKeys = [67, 69];
-                const newVal = [...data].join().split(',13,10')[0].split(`${versionKeys},`)[1].split(',');
-                versionKeys.push(...newVal.map(i => +i));
-                return { [newKey]: Buffer.from(versionKeys).toString() };
+            const versionKeys = [67, 69];
+            const newVal = [...data].join().split(',13,10')[0].split(`${versionKeys},`)[1].split(',');
+            versionKeys.push(...newVal.map(i => +i));
+            return { [newKey]: Buffer.from(versionKeys).toString() };
             case 'voltA':
             case 'voltL':
             case 'frequency':
@@ -32,24 +36,24 @@ function getEnergomeraResult(data, key, opt) {
             case 'coruu':
             case 'cosf':
             case 'tanf':
-                return { [keyArg]: value[keyArgProp] || 'empty'};
+            return { [keyArg]: value[keyArgProp] || 'empty'};
             case 'currentDate':
-                const today = value[0].split(',');
-                return { [keyArg]: today.length != 1 ? `${today[0]} ${today[1].replace('.', '/')}` : value[0].split('.').slice(1).join('.') }
+            const today = value[0].split(',');
+            return { [keyArg]: today.length != 1 ? `${today[0]} ${today[1].replace('.', '/')}` : value[0].split('.').slice(1).join('.') }
             case 'lst':
-                return { [newKey]: value || 'empty'};
+            return { [newKey]: value || 'empty'};
             case '3.0':
-                return getProfile(data, opt) || 'empty'
+            return getProfile(data, opt) || 'empty'
             case 'positiveA.all':
             case 'positiveR.all':
             case 'negativeA.all':
             case 'negativeR.all':
             case '2.0':
-                if (newKey !== '2.0') {
-                    return { [keyArg]: createResultA_R_Current(value) || 'empty' }
-                } else {
-                    return createResultA_R(data) || 'empty'
-                }
+            if (newKey !== '2.0') {
+                return { [keyArg]: createResultA_R_Current(value) || 'empty' }
+            } else {
+                return createResultA_R(data) || 'empty'
+            }
             default:
             // Handle unknown cases or debug if needed
             console.log(newKey, data, 'hammasi ok')
@@ -64,9 +68,12 @@ function getEnergomeraResult(data, key, opt) {
 function createResultA_R(params) {
     let results = []
     for (const i of params) {
-        // console.log(extractorFunc(i.data.toString()))
-        const [dateSum, ...tarifs] = extractorFunc(i.data.toString())
-        const [date, sum] = dateSum.split(',')
+        let [dateSum, ...tarifs] = extractorFunc(i.data.toString())
+        let [date, sum] = dateSum.split(',')
+        if (!sum) {
+            sum = tarifs.shift()
+            date = i.date
+        }
         if (!results.length) {
             results.push({
                 date,
@@ -87,9 +94,20 @@ function createResultA_R(params) {
             }
         }
     }
-    console.log(results);
-    return results.map(i => [i.date, i['positiveA.all:sum'], i['negativeA.all:sum'], i['positiveR.all:sum'], i['negativeR.all:sum'], ...i.tarif])
+    return results.map(i => {
+        if (!i['negativeA.all:sum'] && !i['positiveR.all:sum'] && !i['negativeR.all:sum']) {
+            i.tarif.splice(4,0, ...new Array(12).fill(null))
+            return [i.date, i['positiveA.all:sum'], i['negativeA.all:sum'], i['positiveR.all:sum'], i['negativeR.all:sum'], ...i.tarif]
+        } else if (!i['negativeA.all:sum']) {
+            i.tarif.splice(4,0, ...new Array(4).fill(null))
+            return [i.date, i['positiveA.all:sum'], i['negativeA.all:sum'], i['positiveR.all:sum'], i['negativeR.all:sum'], ...i.tarif]
+        } else {
+            return [i.date, i['positiveA.all:sum'], i['negativeA.all:sum'], i['positiveR.all:sum'], i['negativeR.all:sum'], ...i.tarif]   
+        }
+    })
 }
+
+
 
 function createResultA_R_Current(params) {
     const [data, ...tarifs] = params

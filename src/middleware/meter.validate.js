@@ -1,7 +1,7 @@
 module.exports.meterValidate = (schema) => {
     return (req, res, next) => {
         try {
-            const { error, value } = schema(req.body?.type).validate(req.body)
+            const { error, value } = schema(req.body?.meter_type).validate(req.body)
             if (error) {
                 return res.status(400).json({
                     status: 400,

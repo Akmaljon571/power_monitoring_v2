@@ -10,8 +10,6 @@ const { getEnergomeraResult } = require('../result_convertors/energomera_result_
 const { getMercuryResult } = require('../result_convertors/mercury_result_convertor.js')
 const { getTE_73Result } = require('../result_convertors/TE_73CAS.js')
 
-
-
 let allowParametres = ['0.1_hashedPassword', '0.2_password', '0.0_version']
 let versionAllowed = ['0.1_hashedPassword', '0.2_password']
 let onlyVerionAllow = ['version', 'password']
@@ -72,7 +70,7 @@ async function getCounterResult(data) {
                 await openPort(port)
                 for (let j of startCommands) {
                     let { data, key } = await serialPortEngine(j, port, type[0])
-                    console.log(key, data);
+                    // console.log(key, data);
                     if (data && !onlyVerionAllow.includes(key)) {
                         let resValue = getTE_73Result(data,key)
                         result.push(resValue)
@@ -108,7 +106,7 @@ async function getLstCounterResult(data) {
         let lstResult
         let lstResultIndex
         let getValue = []
-        
+        // console.log(getCommands);
         if (checkCounterExist('CE', setUp)) {
             if (checkCounterExist(type[1], '308')) {
                 const lstCommands = ObisQuery[`${type[0]}_Counter_Query`](null, setUp, 'lst')
@@ -132,24 +130,28 @@ async function getLstCounterResult(data) {
                 if (!lstResultIndex.length) { return [] }
                 
                 for(let i of getCommands) {
-                    for(let j of lstResultIndex) {
-                        let insert = {[getObjectKeyValue(i)]: ObisQuery.parseValue(getObjectKeyValue(i, 'value'),j,10)}
-                        startCommands.splice(3,0,insert)
-                        await openPort(port)
-                        for(let k of startCommands) {
-                            let {data,key} = await serialPortEngine(k, port)
-                            if (data && !allowParametres.includes(key)) {
-                                getValue.push({key, data})
+                    if (!getObjectKeyValue(i, 'value')?.length) {
+                        continue
+                    } else {
+                        for(let j of lstResultIndex) {
+                            let insert = {[getObjectKeyValue(i)]: ObisQuery.parseValue(getObjectKeyValue(i, 'value'),j,10)}
+                            startCommands.splice(3,0,insert)
+                            await openPort(port)
+                            for(let k of startCommands) {
+                                let {data,key} = await serialPortEngine(k, port)
+                                if (data && !allowParametres.includes(key)) {
+                                    getValue.push({key, data})
+                                }
                             }
+                            startCommands.splice(3,1)
+                            await closePort(port)
                         }
-                        startCommands.splice(3,1)
-                        await closePort(port)
                     }
                 }
+                // console.log(getValue, data.ReadingRegister[0])
                 return getEnergomeraResult(getValue, data.ReadingRegister[0])
             } else if (!checkCounterExist(type[1], '308')) {
                 let date = dateConvertor(lstReq,null,'YYYY-MM-DD')
-                console.log(123);
                 lstResultIndex = getDaysArray(new Date(date.from),new Date(date.to)).map(i => Array.from(i, c => c.charCodeAt(0)))
                 for(let i of getCommands) {
                     if (!getObjectKeyValue(i, 'value')?.length) {
@@ -172,7 +174,8 @@ async function getLstCounterResult(data) {
                 }
                 return getEnergomeraResult(getValue, data.ReadingRegister[0])
             }
-        } else {
+        } else if (checkCounterExist('TE', setUp)) {
+            console.log(data)
             return [{data: 'this type of counter not written yet'}]
         }
         return result

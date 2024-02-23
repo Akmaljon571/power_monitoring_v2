@@ -1,5 +1,5 @@
 const crc16modbus = require('crc/calculators/crc16modbus');
-const { queries: { TE_73CAS } } = require('../queries/index')
+const { queries: { TE_73CAS } } = require('../../queries/index')
 // console.log(TE_73CAS)
 module.exports = { queryMaker, TE_Command, checkCrcIs };
 
