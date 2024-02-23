@@ -9,6 +9,4 @@ vectorni to'girlash
 
 startMiddlewareni meter qoshishda yoqib qoyish
 
-meter va parameterlardagi enum larni to'girlab chiqish
-
-billing va archive togri ishlavotganiga ishonch hosil qilish
+billing va archive errorda togri ishlavotganiga ishonch hosil qilish

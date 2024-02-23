@@ -52,12 +52,38 @@ module.exports.billingRepository = () => {
           }
         }
       }
-      await callback({ id, oneDate, twoDate })
+      const element = await electObjectModel.findById(id)
 
-      const sDate = new Date(...oneDate);
-      const fDate = new Date(...twoDate);
-      sDate.setHours(0, 0, 0, 0)
-      fDate.setHours(0, 0, 0, 0)
+      const callbackFeeder = async ({ id, oneDate, twoDate }) => {
+        if (element.type == 'feeder') {
+          const find = await electObjectModel.find({ parent_object: id });
+          for (let i = 0; i < find.length; i++) {
+            feeder[element._id] = { name: element.name, parent: String(element.parent_object) }
+            if (find[i].type) {
+              meters.push(find[i]);
+            }
+          }
+        } else {
+          const find = await electObjectModel.findById({ _id: element.parent_object });
+          feeder[find._id] = { name: find.name, parent: String(find.parent_object) }
+          if (element.type) {
+            meters.push(element);
+          }
+        }
+      }
+
+      if (element.type != 'feeder' && element.type != 'meter') {
+        await callback({ id, oneDate, twoDate })
+      } else {
+        await callbackFeeder({ id, oneDate, twoDate })
+      }
+
+      const sDate = new Date(oneDate);
+      const fDate = new Date(twoDate);
+      sDate.setUTCHours(0, 0, 0, 0)
+      fDate.setUTCHours(0, 0, 0, 0)
+      sDate.setDate(sDate.getDate() + 1)
+      fDate.setDate(fDate.getDate() + 1)
 
       for (let i = 0; i < meters.length; i++) {
         const billing = await billingModel.find({ meter_id: meters[i].meter_id })
