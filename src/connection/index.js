@@ -7,19 +7,19 @@ const { requestBilling, requestArchive, requestDateTime, requestCurrent } = requ
 let bool = true
 
 module.exports.startMiddleware = async (status, sendMessage, realTime) => {
+    const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "current" } })
     if (status === 'run-app') {
         bool = false
         // await previousCheking()
     }
 
     bool = true
-    await getDataFromMiddleware(sendMessage, realTime)
+    await getDataFromMiddleware(meters, sendMessage, realTime)
 }
 
-const getDataFromMiddleware = async (sendMessage, realTime) => {
+const getDataFromMiddleware = async (meters, sendMessage, realTime) => {
     try {
         if (bool) {
-            const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "current" } })
             for (let i in meters) {
                 let parameterIds = []
                 meters[i].parameters?.map(param => {
@@ -29,7 +29,7 @@ const getDataFromMiddleware = async (sendMessage, realTime) => {
                 })
                 await checkDate(meters[i], parameterIds, sendMessage, realTime).then(console.log)
             }
-            await getDataFromMiddleware(sendMessage, realTime)
+            await getDataFromMiddleware(meters, sendMessage, realTime)
         }
     } catch (err) {
         console.log(err);
@@ -105,11 +105,10 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
             let activePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[1])
             let reactivePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[2])
             let reactivePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[3])
-            const checkTime = await repositories().parameterValueRepository().findTodayList(new Date(), activePowerPlus._id)
+            const checkTime = await repositories().parameterValueRepository().findTodayList(activePowerPlus._id)
+            console.log(checkTime, new Date())
 
-            const last_add_time = new Date(checkTime.last_add)
-            last_add_time.setUTCMilliseconds(checkTime.time);
-            if (last_add_time - new Date() > 0) {
+            if (checkTime.last_join - new Date() > 0) {
                 sendMessage(meter._id, 'end', 'archive')
                 await billingData(meter, parameterIds, sendMessage, realTime).then((res) => {
                     console.log(res)
@@ -118,7 +117,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
                 return
             }
 
-            const newDate = new Date(2024, 1, 22)
+            const newDate = new Date()
             const requestString = requestArchive(meter, newDate, newDate)
             sendMessage(meter._id, 'send', 'archive')
             const data = await serialPort(requestString)
@@ -130,14 +129,22 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
 
             let valuesList = []
             data.map((element) => {
+                if(element?.status != undefined && element?.status == 0) {
+                    return
+                }
                 const date = dateTime(element?.date)
-                const time = dateTime(data[1].date) - dateTime(data[0].date)
                 const today = new Date()
 
-                const check1 = today - new Date(new Date(checkTime.last_add).setUTCMilliseconds(time)) > 0
-                const check2 = date - today < 0
+                const check1 = date - today <= 0
+                let check2 = true
+                let check3 = true
+                if(checkTime.last_add) {
+                    check2 = today - checkTime.last_add > 0
+                    check3 = date - new Date(checkTime.last_join) >= 0
+                }
 
-                if (check1 && check2) {
+                if (check1 && check2 && check3) {
+                    console.log(element)
                     if (element?.profile1) {
                         let activePowerValue = {
                             date,

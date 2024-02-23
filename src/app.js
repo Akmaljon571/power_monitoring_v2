@@ -28,7 +28,7 @@ app.use(router);
 app.use(ErrorHandle);
 
 const realTime = (data) => {
-    console.log(data, "real-time")
+    // console.log(data, "real-time")
     io.emit("real-time", { data });
 }
 

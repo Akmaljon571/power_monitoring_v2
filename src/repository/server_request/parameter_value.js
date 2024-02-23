@@ -10,9 +10,9 @@ module.exports.parameterValueRepository = () => {
         findTodayList
     })
 
-    async function insert(model,args) {
+    async function insert(model, args) {
         try {
-            let modelname = model ? "parameter_values_"+ model: "parameter_values"
+            let modelname = model ? "parameter_values_" + model : "parameter_values"
             await parameterValueModel(modelname).insertMany(args)
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -24,9 +24,9 @@ module.exports.parameterValueRepository = () => {
             let modelname = "parameter_values"
             const pipArray = [
                 {
-                   $match:{
-                      parameter: new mongoose.Types.ObjectId(query.parameter) 
-                   }
+                    $match: {
+                        parameter: new mongoose.Types.ObjectId(query.parameter)
+                    }
                 },
                 {
                     $sort: {
@@ -42,12 +42,12 @@ module.exports.parameterValueRepository = () => {
                     $match: {
                         "parameter.parameter_type": query.parameter_type
                     }
-                 })
+                })
                 pipArray.unshift({
                     $match: {
                         "parameter.channel_type": query.channel_type
                     }
-                 })
+                })
                 pipArray.unshift({
                     $lookup: {
                         from: "parameters",
@@ -56,7 +56,7 @@ module.exports.parameterValueRepository = () => {
                         as: "parameter"
                     }
                 })
-                
+
             }
 
             const parameterDocument = await parameterValueModel(modelname).aggregate(pipArray)
@@ -68,8 +68,8 @@ module.exports.parameterValueRepository = () => {
 
     async function findLastInsertedCurrent(query) {
         try {
-            let modelname =  "parameter_values_" + new Date().getFullYear() + (new Date().getMonth() + 1 )
-             
+            let modelname = "parameter_values_" + new Date().getFullYear() + (new Date().getMonth() + 1)
+
             const pipArray = [
                 {
                     $sort: {
@@ -83,33 +83,22 @@ module.exports.parameterValueRepository = () => {
 
 
             let parameterDocument = await parameterValueModel(modelname).aggregate(pipArray)
-            if(parameterDocument.length === 0){
+            if (parameterDocument.length === 0) {
                 modelname = "parameter_values_" + new Date().getFullYear() + (new Date().getMonth())
                 parameterDocument = await parameterValueModel(modelname).aggregate(pipArray)
-             }
+            }
             return parameterDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
         }
     }
 
-    async function findTodayList(dateTime, id) {
+    async function findTodayList(id) {
         try {
-            const date = new Date(dateTime)
-            date.setHours(0, 0, 0)
-            const parameterDocument = await parameterValueModel('parameter_values').find({ date: { $gt: date }, parameter: id })
-            const todayDatas = parameterDocument.filter(e => new Date(e.date) - new Date(date) >= 0).sort((a, b) => a.date - b.date)
-            
-            let obj = {
-                time: 0,
-                last_add: date,
-            }
-            const reverseData = todayDatas.reverse()
-            if (todayDatas.length > 2) {
-                obj = {
-                    time: reverseData[0].date  - reverseData[1].date,
-                    last_add: reverseData[0].date,
-                }
+            const parameterDocuments = await parameterValueModel('parameter_values').find({ parameter: id }, {}, { sort: { 'date': -1 } })
+            const obj = {
+                last_add: parameterDocuments[0].date || "",
+                last_join: new Date(new Date(parameterDocuments[0].date).setUTCMilliseconds(parameterDocuments[0].date - parameterDocuments[1].date)) || "",
             }
             return obj
         } catch (err) {

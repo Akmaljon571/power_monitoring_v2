@@ -31,9 +31,13 @@ module.exports.previousObjectRepository = () =>{
     async function update(meter_id, archive='', billing='') {
         try {
             const find = await previousModel.findOne({ meter_id })
+            const dateFind = archive || billing
+            const date = new Date(dateFind)
+            date.setUTCHours(date.getHours())
+
             await previousModel.updateOne(
                 { meter_id: meter_id },
-                { $set: { archive: archive || find.archive, billing: billing || find.billing } }
+                { $set: { archive: archive ? date : find.archive, billing: billing ? date : find.billing } }
             )
         } catch (error) {
             throw new CustomError(error.status, error.message)
