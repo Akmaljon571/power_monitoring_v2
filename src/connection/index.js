@@ -1,3 +1,4 @@
+const { paramsOBISReadFile } = require('../global/file-path')
 const { energyarchive, real_time_variable } = require('../global/variable')
 const { repositories } = require('../repository')
 const { serialPort } = require('../server/utils/serialport/serialport')
@@ -14,7 +15,7 @@ module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     }
 
     bool = true
-    await getDataFromMiddleware(meters, sendMessage, realTime)
+    // await getDataFromMiddleware(meters, sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (meters, sendMessage, realTime) => {
@@ -27,7 +28,7 @@ const getDataFromMiddleware = async (meters, sendMessage, realTime) => {
                         parameterIds.push(`${param.channel_full_id}`)
                     }
                 })
-                await checkDate(meters[i], parameterIds, sendMessage, realTime).then(console.log)
+                await checkDate(meters[1], parameterIds, sendMessage, realTime).then(console.log)
             }
             await getDataFromMiddleware(meters, sendMessage, realTime)
         }
@@ -185,7 +186,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
             await billingData(meter, parameterIds, sendMessage, realTime).then(async () => {
                 await repositories().parameterValueRepository().insert(false, valuesList)
                 await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
-                await repositories().previousObjectRepository().update(meter._id, new Date())
+                await repositories().previousObjectRepository().updateLoop(meter._id, new Date())
             }).finally(() => {
                 resolve('ok')
             })
@@ -324,32 +325,37 @@ const currentData = async (meter, list, sendMessage, realTime) => {
             let newJournalDocument = await repositories().journalRepository().insert(journalParameter)
 
             const requestString = requestCurrent(meter, list)
-            console.log(requestString)
+           
             const data = await serialPort(requestString)
-
+            
             const date = new Date()
             const modelDate = "" + date.getFullYear() + date.getMonth()
             const realTimeData = { date: new Date(), "AP": "0", "RP": "0", "FP": "0", "CP": "0" }
             const valueList = []
 
             const realTimeVariable = real_time_variable(meter.meter_type)
-            for (let i = 0; i < list.length; i++) {
-                let parameter = await repositories().parameterRepository().findOne({ channel_full_id: list[i], meter: meter._id })
-                if (list[i] == realTimeVariable[0]) {
-                    realTimeData.AP = data[i][list[i]]
-                } else if (list[i] == realTimeVariable[1]) {
-                    realTimeData.RP = data[i][list[i]]
-                } else if (list[i] == realTimeVariable[2]) {
-                    realTimeData.FP = data[i][list[i]]
-                } else if (list[i] == realTimeVariable[3]) {
-                    realTimeData.CP = data[i][list[i]]
-                }
+            const existsObis = paramsOBISReadFile(meter.meter_type)
 
-                if (parameter) {
-                    const result = { value: data[i][list[i]], date, parameter: parameter._id }
-                    valueList.push(result)
-                } else {
-                    console.log('parameter not found')
+            for (let i = 0; i < list.length; i++) {
+
+                if(existsObis.includes(list[i])) {
+                    let parameter = await repositories().parameterRepository().findOne({ channel_full_id: list[i], meter: meter._id })
+                    if (list[i] == realTimeVariable[0]) {
+                        realTimeData.AP = data[i][list[i]]
+                    } else if (list[i] == realTimeVariable[1]) {
+                        realTimeData.RP = data[i][list[i]]
+                    } else if (list[i] == realTimeVariable[2]) {
+                        realTimeData.FP = data[i][list[i]]
+                    } else if (list[i] == realTimeVariable[3]) {
+                        realTimeData.CP = data[i][list[i]]
+                    }
+
+                    if (parameter) {
+                        const result = { value: data[i][list[i]], date, parameter: parameter._id }
+                        valueList.push(result)
+                    } else {
+                        console.log('parameter not found')
+                    }
                 }
             }
 

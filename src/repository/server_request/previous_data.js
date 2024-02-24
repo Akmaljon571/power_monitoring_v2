@@ -7,7 +7,8 @@ module.exports.previousObjectRepository = () =>{
         update,
         updateStatus,
         findOne,
-        findAll
+        findAll,
+        updateLoop
     })
 
     async function insert(meter) {
@@ -29,6 +30,19 @@ module.exports.previousObjectRepository = () =>{
     }
 
     async function update(meter_id, archive='', billing='') {
+        try {
+            const find = await previousModel.findOne({ meter_id })
+
+            await previousModel.updateOne(
+                { meter_id: meter_id },
+                { $set: { archive: archive || find.archive, billing: billing || find.billing } }
+            )
+        } catch (error) {
+            throw new CustomError(error.status, error.message)
+        }
+    }
+
+    async function updateLoop(meter_id, archive='', billing='') {
         try {
             const find = await previousModel.findOne({ meter_id })
             const dateFind = archive || billing

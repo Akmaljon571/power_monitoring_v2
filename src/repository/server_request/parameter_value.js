@@ -96,9 +96,10 @@ module.exports.parameterValueRepository = () => {
     async function findTodayList(id) {
         try {
             const parameterDocuments = await parameterValueModel('parameter_values').find({ parameter: id }, {}, { sort: { 'date': -1 } })
+            const join = new Date(new Date(parameterDocuments[0]?.date).setUTCMilliseconds(parameterDocuments[0]?.date - parameterDocuments[1]?.date))
             const obj = {
-                last_add: parameterDocuments[0].date || "",
-                last_join: new Date(new Date(parameterDocuments[0].date).setUTCMilliseconds(parameterDocuments[0].date - parameterDocuments[1].date)) || "",
+                last_add: parameterDocuments[0]?.date || "",
+                last_join: join && join != 'Invalid Date' ? join : "",
             }
             return obj
         } catch (err) {

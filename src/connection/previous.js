@@ -1,3 +1,4 @@
+const { energyarchive } = require("../global/variable");
 const { repositories } = require("../repository");
 const { serialPort } = require("../server/utils/serialport/serialport");
 const { requestBilling, requestArchive } = require("./request");
@@ -27,43 +28,75 @@ const archiveFill = async (meter, oldDate) => {
         let activePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[1])
         let reactivePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[2])
         let reactivePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[3])
+        const checkTime = await repositories().parameterValueRepository().findTodayList(activePowerPlus._id)
 
         const requestString = requestArchive(meter, previousDate, yesterday)
         const data = await serialPort(requestString)
 
-        let valuesList = []
+        const dateTime = (date) => {
+            const [day, month, year, hours, minutes] = date.split(/[^\d]+/);
+            return new Date(`20${year}`, month - 1, day, hours, minutes)
+        }
 
+        let valuesList = []
         data.map((element) => {
-            const [day, month, year, hours, minutes] = element?.date?.split(/[^\d]+/);
-            const date = new Date(`20${year}`, month - 1, day, hours, minutes)
-            let activePowerValue = {
-                date,
-                value: Number(element.profile1),
-                parameter: activePowerPlus._id
+            console.log(element)
+            if (element?.status != undefined && element?.status == 0) {
+                return
             }
-            let activePowerValueMinus = {
-                date,
-                value: Number(element.profile2),
-                parameter: activePowerMinus._id
+            const date = dateTime(element?.date)
+            const today = new Date()
+
+            const check1 = date - today <= 0
+            let check2 = true
+            let check3 = true
+            if (checkTime.last_add) {
+                check2 = today - checkTime.last_add > 0
+                check3 = date - new Date(checkTime.last_join) >= 0
             }
-            let reactivePowerValue = {
-                date,
-                value: Number(element.profile3),
-                parameter: reactivePowerPlus._id
+
+            if (check1 && check2 && check3) {
+                console.log(element)
+                if (element?.profile1) {
+                    let activePowerValue = {
+                        date,
+                        value: Number(element.profile1),
+                        parameter: activePowerPlus._id
+                    }
+                    valuesList.push(activePowerValue)
+                }
+                if (element?.profile2) {
+                    let activePowerValueMinus = {
+                        date,
+                        value: Number(element.profile2),
+                        parameter: activePowerMinus._id
+                    }
+                    valuesList.push(activePowerValueMinus)
+                }
+                if (element?.profile3) {
+                    let reactivePowerValue = {
+                        date,
+                        value: Number(element.profile3),
+                        parameter: reactivePowerPlus._id
+                    }
+                    valuesList.push(reactivePowerValue)
+                }
+                if (element?.profile4) {
+                    let reactivePowerValueMinus = {
+                        date,
+                        value: Number(element.profile4),
+                        parameter: reactivePowerMinus._id
+                    }
+                    valuesList.push(reactivePowerValueMinus)
+                }
             }
-            let reactivePowerValueMinus = {
-                date,
-                value: Number(element.profile4),
-                parameter: reactivePowerMinus._id
-            }
-            valuesList.push(activePowerValue, reactivePowerValue, activePowerValueMinus, reactivePowerValueMinus)
         })
         console.log(valuesList.length, "value")
         await repositories().parameterValueRepository().insert(false, valuesList)
         await repositories().previousObjectRepository().update(meter._id, yesterday)
         return 'ok'
     } catch (error) {
-        console.log(error)
+        console.log(error,'dfsetf')
     }
 }
 
