@@ -97,37 +97,39 @@ module.exports.billingRepository = () => {
           result[feeder[meters[i].parent_object].parent] = []
         }
 
+        console.log(oneData, twoData)
         result[feeder[meters[i].parent_object].parent].push({
           nomer: meter.number_meter,
           feeder: feeder[meters[i].parent_object].name,
           TT: meters[i].vt,
           TN: meters[i].ct,
-          day1_A1: oneData.summa_A1,
-          day1_A0: oneData.summa_A0,
-          day1_R0: oneData.summa_R0,
-          day1_R1: oneData.summa_R1,
-          day2_A1: twoData.summa_A1,
-          day2_A0: twoData.summa_A0,
-          day2_R0: twoData.summa_R0,
-          day2_R1: twoData.summa_R1,
-          tarif1_A1: twoData.tarif1_A1 - oneData.tarif1_A1,
-          tarif2_A1: twoData.tarif2_A1 - oneData.tarif2_A1,
-          tarif3_A1: twoData.tarif3_A1 - oneData.tarif3_A1,
-          tarif4_A1: twoData.tarif4_A1 - oneData.tarif4_A1,
-          tarif1_A0: twoData.tarif1_A0 - oneData.tarif1_A0,
-          tarif2_A0: twoData.tarif2_A0 - oneData.tarif2_A0,
-          tarif3_A0: twoData.tarif3_A0 - oneData.tarif3_A0,
-          tarif4_A0: twoData.tarif4_A0 - oneData.tarif4_A0,
-          tarif1_R1: twoData.tarif1_R1 - oneData.tarif1_R1,
-          tarif2_R1: twoData.tarif2_R1 - oneData.tarif2_R1,
-          tarif3_R1: twoData.tarif3_R1 - oneData.tarif3_R1,
-          tarif4_R1: twoData.tarif4_R1 - oneData.tarif4_R1,
-          tarif1_R0: twoData.tarif1_R0 - oneData.tarif1_R0,
-          tarif2_R0: twoData.tarif2_R0 - oneData.tarif2_R0,
-          tarif3_R0: twoData.tarif3_R0 - oneData.tarif3_R0,
-          tarif4_R0: twoData.tarif4_R0 - oneData.tarif4_R0,
+          day1_A1: oneData.summa_A1 || null,
+          day1_A0: oneData.summa_A0 || null,
+          day1_R0: oneData.summa_R0 || null,
+          day1_R1: oneData.summa_R1 || null,
+          day2_A1: twoData.summa_A1 || null,
+          day2_A0: twoData.summa_A0 || null,
+          day2_R0: twoData.summa_R0 || null,
+          day2_R1: twoData.summa_R1 || null,
+          tarif1_A1: oneData.tarif1_A1 != undefined && twoData.tarif1_A1 != undefined ? twoData.tarif1_A1 - oneData.tarif1_A1 : null,
+          tarif2_A1: oneData.tarif2_A1 != undefined && twoData.tarif2_A1 != undefined ? twoData.tarif2_A1 - oneData.tarif2_A1 : null,
+          tarif3_A1: oneData.tarif3_A1 != undefined && twoData.tarif3_A1 != undefined ? twoData.tarif3_A1 - oneData.tarif3_A1 : null,
+          tarif4_A1: oneData.tarif4_A1 != undefined && twoData.tarif4_A1 != undefined ? twoData.tarif4_A1 - oneData.tarif4_A1 : null,
+          tarif1_A0: oneData.tarif1_A0 != undefined && twoData.tarif1_A0 != undefined ? twoData.tarif1_A0 - oneData.tarif1_A0 : null,
+          tarif2_A0: oneData.tarif2_A0 != undefined && twoData.tarif2_A0 != undefined ? twoData.tarif2_A0 - oneData.tarif2_A0 : null,
+          tarif3_A0: oneData.tarif3_A0 != undefined && twoData.tarif3_A0 != undefined ? twoData.tarif3_A0 - oneData.tarif3_A0 : null,
+          tarif4_A0: oneData.tarif4_A0 != undefined && twoData.tarif4_A0 != undefined ? twoData.tarif4_A0 - oneData.tarif4_A0 : null,
+          tarif1_R1: oneData.tarif1_R1 != undefined && twoData.tarif1_R1 != undefined ? twoData.tarif1_R1 - oneData.tarif1_R1 : null,
+          tarif2_R1: oneData.tarif2_R1 != undefined && twoData.tarif2_R1 != undefined ? twoData.tarif2_R1 - oneData.tarif2_R1 : null,
+          tarif3_R1: oneData.tarif3_R1 != undefined && twoData.tarif3_R1 != undefined ? twoData.tarif3_R1 - oneData.tarif3_R1 : null,
+          tarif4_R1: oneData.tarif4_R1 != undefined && twoData.tarif4_R1 != undefined ? twoData.tarif4_R1 - oneData.tarif4_R1 : null,
+          tarif1_R0: oneData.tarif1_R0 != undefined && twoData.tarif1_R0 != undefined ? twoData.tarif1_R0 - oneData.tarif1_R0 : null,
+          tarif2_R0: oneData.tarif2_R0 != undefined && twoData.tarif2_R0 != undefined ? twoData.tarif2_R0 - oneData.tarif2_R0 : null,
+          tarif3_R0: oneData.tarif3_R0 != undefined && twoData.tarif3_R0 != undefined ? twoData.tarif3_R0 - oneData.tarif3_R0 : null,
+          tarif4_R0: oneData.tarif4_R0 != undefined && twoData.tarif4_R0 != undefined ? twoData.tarif4_R0 - oneData.tarif4_R0 : null,
         })
       }
+      console.log(result)
       return result;
     } catch (error) {
       console.error('Error in findList:', error);

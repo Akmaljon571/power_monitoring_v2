@@ -1,7 +1,7 @@
 const CustomError = require("../../utils/custom_error")
 const { repositories } = require("../../repository")
 
-module.exports.getDashboardData = async(req, res) => {
+module.exports.getDashboardData = async (req, res) => {
     try {
         const { id } = req.params
         const query = req.data
@@ -10,13 +10,13 @@ module.exports.getDashboardData = async(req, res) => {
         query.getParameters = query.getParameters && query.getParameters === false ? query.getParameters : true
         const dailyDocuments = await repositories().electObjectRepository().findOneAndDashboard(id, query, "daily")
         const monthlyDocuments = await repositories().electObjectRepository().findOneAndDashboard(id, query, "monthly")
+
         if (dailyDocuments && dailyDocuments.type === 'feeder') {
             for (let i = 0; i < dailyDocuments.parameters.length; i++) {
                 dailyDocuments.parameters[i].parameter_values = dailyDocuments.parameters[i].parameter_values.map((param) => {
-                    dailyDocuments.parameters[i].multiply
-                        .map(element => {
-                            param.value = param.value * element
-                        })
+                    dailyDocuments.parameters[i].multiply.map(element => {
+                        param.value = param.value * element
+                    })
                     return param
                 })
             }
@@ -39,7 +39,7 @@ module.exports.getDashboardData = async(req, res) => {
     }
 }
 
-module.exports.getDashboardDataCalculation = async(req, res) => {
+module.exports.getDashboardDataCalculation = async (req, res) => {
     try {
         const { id } = req.params
         const query = req.data
@@ -48,7 +48,7 @@ module.exports.getDashboardDataCalculation = async(req, res) => {
         query.getParameters = query.getParameters && query.getParameters === false ? query.getParameters : true
         const dailyDocuments = await repositories().calculationObjectRepository().findOneAndDashboard(id, query, "daily")
         const monthlyDocuments = await repositories().calculationObjectRepository().findOneAndDashboard(id, query, "monthly")
-        
+
         res.status(200).json({ status: 200, error: null, data: { dailyDocuments, monthlyDocuments } })
     } catch (err) {
         const error = new CustomError(err.status, err.message)

@@ -15,7 +15,7 @@ module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     }
 
     bool = true
-    // await getDataFromMiddleware(meters, sendMessage, realTime)
+    await getDataFromMiddleware(meters, sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (meters, sendMessage, realTime) => {
@@ -28,7 +28,7 @@ const getDataFromMiddleware = async (meters, sendMessage, realTime) => {
                         parameterIds.push(`${param.channel_full_id}`)
                     }
                 })
-                await checkDate(meters[1], parameterIds, sendMessage, realTime).then(console.log)
+                await checkDate(meters[i], parameterIds, sendMessage, realTime).then(console.log)
             }
             await getDataFromMiddleware(meters, sendMessage, realTime)
         }
@@ -106,6 +106,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
             let activePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[1])
             let reactivePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[2])
             let reactivePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[3])
+            console.log(activePowerMinus)
             const checkTime = await repositories().parameterValueRepository().findTodayList(activePowerPlus._id)
             console.log(checkTime, new Date())
 

@@ -1,8 +1,8 @@
 const mongoose = require("mongoose")
 const { electObjectModel, folderModel, billingModel, parameterModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
-const { parameterShortNamesList_enum } = require("../../validation/meter")
 const { energyarchive, energytotal } = require("../../global/variable")
+const { all_short_name } = require("../../global/file-path")
 
 module.exports.electObjectRepository = () => {
     return Object.freeze({
@@ -345,7 +345,7 @@ module.exports.electObjectRepository = () => {
                 query.finishDate = new Date(query.startDate)
                 query.finishDate.setDate(query.startDate.getDate() + 1)
             }
-            let existList = query && query.selectedParameters ? query.selectedParameters : parameterShortNamesList_enum
+            let existList = query && query.selectedParameters ? query.selectedParameters : all_short_name()
             const limit = query && query.limit ? query.limit : 150
             let subPipArray = [
                 {
@@ -605,7 +605,7 @@ module.exports.electObjectRepository = () => {
         try {
             let modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
 
-            let existList = query && query.selectedParameters ? query.selectedParameters : parameterShortNamesList_enum
+            let existList = query && query.selectedParameters ? query.selectedParameters : all_short_name()
 
             const limit = query && query.limit ? query.limit : 150
             let subPipArray = [
@@ -858,13 +858,15 @@ module.exports.electObjectRepository = () => {
             const existList = query.selectedParameters ? query.selectedParameters : energyarchive
             const year = query.year ? query.year : new Date().getFullYear()
             const month = query.month ? query.month : new Date().getMonth()
+
+
             let subPipArrayDaily = [
                 {
                     $match: {
                         $expr: {
                             $and: [
-                                { $eq: [{ $month: '$date' }, month] },
-                                { $eq: [{ $year: '$date' }, year] }
+                                { $eq: [{ $month: '$date' }, Number(month)] },
+                                { $eq: [{ $year: '$date' }, Number(year)] }
                             ]
                         }
                     }
@@ -898,7 +900,7 @@ module.exports.electObjectRepository = () => {
                 {
                     $match: {
                         $expr: {
-                            $eq: [{ $year: '$date' }, year]
+                            $eq: [{ $year: '$date' }, Number(year)]
                         }
                     }
                 },
@@ -924,7 +926,6 @@ module.exports.electObjectRepository = () => {
                     }
                 }
             ]
-
             const electObjectPipelines = [
                 {
                     $match: {
@@ -1013,6 +1014,7 @@ module.exports.electObjectRepository = () => {
             ]
 
             const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
+            console.log(electObjectDocument[0])
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)

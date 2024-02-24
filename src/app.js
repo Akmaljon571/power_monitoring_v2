@@ -34,7 +34,7 @@ const realTime = (data) => {
 
 const sendMessage = (id, status, where) => {
     console.log(id, status, where)
-    io.emit("send-message", { id, status });
+    io.emit("send-message", { id, status, where });
 }
 
 startMiddleware('run-app', sendMessage, realTime)

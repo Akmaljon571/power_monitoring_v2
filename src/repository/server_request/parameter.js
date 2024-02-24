@@ -73,10 +73,7 @@ module.exports.parameterRepository = () => {
 
     async function insert(args, meter) {
         try {
-            let parameterIds = []
             const newParams = args.map((el) => {
-                let stringParamName = `${el.channel_full_id}`
-                parameterIds.push(stringParamName)
                 return {
                     meter: meter._id,
                     status: el.status,
@@ -89,7 +86,7 @@ module.exports.parameterRepository = () => {
             })
 
             await parameterModel.insertMany(newParams)
-            return parameterIds
+            return ''
         } catch (err) {
             throw new CustomError(err.status, err.message)
         }
