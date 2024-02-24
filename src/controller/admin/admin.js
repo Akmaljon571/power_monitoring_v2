@@ -1,10 +1,10 @@
 const bcrypt = require("bcryptjs")
 const { adminRepository } = require("../../repository/admin")
 
-module.exports.createAdmin = async(req, res) => {
+module.exports.createAdmin = async (req, res) => {
     try {
         const { name, login, password, role, open_page } = req.result
-        
+
         const find = await adminRepository().findOne({ login: login })
         if (find) res.status(400).json({ status: 400, error: 'User login already exists', data: null });
 
@@ -19,21 +19,21 @@ module.exports.createAdmin = async(req, res) => {
     }
 }
 
-module.exports.listActive = async(req, res) => {
+module.exports.listActive = async (req, res) => {
     try {
         const { status } = req.query
         const adminList = await adminRepository().findAll()
-        if(status === 'inactive') {
-            res.status(200).json({ status: 200, error: null, data: adminList.filter(e => !e.active)})
+        if (status === 'inactive') {
+            res.status(200).json({ status: 200, error: null, data: adminList.filter(e => !e.active) })
         } else {
-            res.status(200).json({ status: 200, error: null, data: adminList.filter(e => e.active)})
+            res.status(200).json({ status: 200, error: null, data: adminList.filter(e => e.active) })
         }
     } catch (err) {
         res.status(500).json({ status: 500, error: err.message, data: null })
     }
 }
 
-module.exports.updateAdmin = async(req, res) => {
+module.exports.updateAdmin = async (req, res) => {
     try {
         const { id } = req.params
         const args = req.result
@@ -59,9 +59,9 @@ module.exports.updateAdmin = async(req, res) => {
     } catch (err) {
         res.status(500).json({ status: 500, error: err.message, data: null })
     }
-}
+}   
 
-module.exports.deleteAdmin = async(req, res) => {
+module.exports.deleteAdmin = async (req, res) => {
     try {
         const { id } = req.params
 
@@ -72,10 +72,10 @@ module.exports.deleteAdmin = async(req, res) => {
     }
 }
 
-module.exports.activeAdmin = async(req, res) => {
+module.exports.activeAdmin = async (req, res) => {
     try {
         const { id } = req.params
-        
+
         await adminRepository().active(id)
         res.status(204).json({ status: 200, error: null, data: 'Successful activate' })
     } catch (err) {

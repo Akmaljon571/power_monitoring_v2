@@ -107,7 +107,7 @@ module.exports.getOneMeter = async (req, res) => {
 module.exports.paramsList = async (req, res) => {
     try {
         const { type } = req.params
-        
+
         res.status(200).json({ status: 200, error: null, data: paramsReadFile(type.toUpperCase()) })
     } catch (err) {
         const error = new CustomError(err.status, err.message)

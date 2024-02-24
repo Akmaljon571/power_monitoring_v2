@@ -2,7 +2,7 @@ const CustomError = require("../../utils/custom_error")
 const { repositories } = require("../../repository")
 
 // getFoldersList
-module.exports.getListFolders = async(req, res) => {
+module.exports.getListFolders = async (req, res) => {
     try {
         const query = req.query
         const folderDocuments = await repositories().folderObjectRepository().findAll(query)
@@ -14,7 +14,7 @@ module.exports.getListFolders = async(req, res) => {
     }
 }
 
-module.exports.getSingleFolder = async(req, res) => {
+module.exports.getSingleFolder = async (req, res) => {
     try {
         const { id } = req.params
         const folderDocument = await repositories().folderObjectRepository().findOne(id)

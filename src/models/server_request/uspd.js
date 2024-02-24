@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
-const { connection_channel_enum } = require("../../validation/uspd")
+const { connection_channel_uspd_enum } = require("../../global/enum")
+
 const uspdSchema = new mongoose.Schema({
     name:{
         type:String
@@ -12,7 +13,7 @@ const uspdSchema = new mongoose.Schema({
     },
     connection_channel:{
         type:String,
-        enum: connection_channel_enum
+        enum: connection_channel_uspd_enum
     },
     number_uspd:{
         type:String
@@ -29,5 +30,3 @@ const uspdSchema = new mongoose.Schema({
 })
 
 module.exports.uspdModel = mongoose.model("uspds",uspdSchema)
-
-

@@ -1,6 +1,6 @@
 const CustomError = require("../../utils/custom_error")
 const { repositories } = require("../../repository")
-const { type_enum, createElectFolder, createElectMeter, updateElectFolder, updateElectMeter, attachParamsElectJoi } = require("../../validation/elect_object")
+const { type_enum } = require("../../validation/elect_object")
 
 module.exports.getElectricityObjects = async(req, res) => {
    try {
