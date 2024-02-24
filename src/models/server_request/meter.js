@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const { statusEnum, connection_channel, meter_form, attached, period_type } = require("../../global/enum")
+const { statusEnum, connection_channel, meter_form, period_type, attachedEnum, baudRateEnum, parityEnum, stopBitEnum, dataBitEnum } = require("../../global/enum")
 const { meterListReadFile } = require("../../global/meter-list")
 
 const meterSchema = new mongoose.Schema({
@@ -22,7 +22,7 @@ const meterSchema = new mongoose.Schema({
     // },
     attached: {
         type: String,
-        enum: attached,
+        enum: attachedEnum,
         default: "0"
     },
     meter_type: {
@@ -44,13 +44,32 @@ const meterSchema = new mongoose.Schema({
     },
     connection_channel: {
         type: String,
-        enum: attached
+        enum: attachedEnum
     },
     ip_address: {
         type: String
     },
     port: {
         type: String
+    },
+    comport: {
+        type: String
+    },
+    baud_rate: {
+        type: String,
+        enum: baudRateEnum
+    },
+    parity: {
+        type: String,
+        enum: parityEnum
+    },
+    stop_bit: {
+        type: String,
+        enum: stopBitEnum
+    },
+    data_bit: {
+        type: String,
+        enum: dataBitEnum
     },
     waiting_time: {
         type: Number

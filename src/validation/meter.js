@@ -1,5 +1,5 @@
 const Joi = require("joi")
-const { meter_form, parameter_type, period_type, statusEnum, attached } = require("../global/enum")
+const { meter_form, parameter_type, period_type, statusEnum, attachedEnum } = require("../global/enum")
 const { meterListReadFile } = require("../global/meter-list")
 const { paramsOBISReadFile, params_short_name_read } = require("../global/file-path")
 const { energyarchive, energyarchive_obis } = require("../global/variable")
@@ -10,7 +10,7 @@ module.exports.createMeterJoi = (type) => {
 
    return Joi.object({
       connection_address: Joi.string().required(),
-      connection_channel: Joi.valid(...attached).required(),
+      connection_channel: Joi.valid(...attachedEnum).required(),
       id: Joi.string().required(),
       ip_address: Joi.string().required(),
       meter_form: Joi.valid(...meter_form).required(),
@@ -55,7 +55,7 @@ module.exports.updateMeterJoi = (type) => {
 
    return Joi.object({
       connection_address: Joi.string(),
-      connection_channel: Joi.valid(...attached),
+      connection_channel: Joi.valid(...attachedEnum),
       id: Joi.string(),
       ip_address: Joi.string(),
       meter_form: Joi.valid(...meter_form).required(),
@@ -92,3 +92,23 @@ module.exports.updateMeterJoi = (type) => {
          })),
    }).required()
 }
+
+// comport: {
+//    type: String
+// },
+// baud_rate: {
+//    type: String,
+//    enum: baudRateEnum
+// },
+// parity: {
+//    type: String,
+//    enum: parityEnum
+// },
+// stop_bit: {
+//    type: String,
+//    enum: stopBitEnum
+// },
+// data_bit: {
+//    type: String,
+//    enum: dataBitEnum
+// },
