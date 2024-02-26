@@ -60,7 +60,7 @@ module.exports.requestDateTime = (meter) => {
         "commMedia": meter.connection_channel,
         "commDetail1": meter.ip_address,
         "commDetail2": meter.port,
-        "ReadingRegister": [paramsIndex2(meter.meter_type).billing]
+        "ReadingRegister": [paramsIndex2(meter.meter_type).datatime]
     } : {
         "MeterType": meter.meter_type,
         "MeterAddress": meter.connection_address,

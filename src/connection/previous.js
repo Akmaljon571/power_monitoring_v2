@@ -2,7 +2,7 @@ const { paramsIndex2 } = require("../global/file-path");
 const { energyarchive } = require("../global/variable");
 const { repositories } = require("../repository");
 const { serialPort } = require("../server/utils/serialport/serialport");
-const { requestBilling, requestArchive } = require("./request");
+const { requestBilling, requestArchive, requestDateTime } = require("./request");
 
 const yesterday = new Date();
 yesterday.setUTCHours(0, 0, 0, 0)
@@ -53,7 +53,7 @@ const archiveFill = async (meter, oldDate) => {
             currentDate.setDate(previousDate.getDate() + 9)
             const requestString = requestArchive(meter, previousDate, currentDate)
             console.log(requestString)
-            
+
             const data = await serialPort(requestString)
             await saveData(data)
         }
@@ -268,6 +268,34 @@ const billingFill = async (meter, oldDate) => {
     }
 }
 
+const checkDate = async (meter) => {
+    try {
+        if (!meter.time_difference) {
+            return 'ok'
+        }
+
+        const requestString = requestDateTime(meter)
+        const data = await serialPort(requestString)
+        const time = data[0]?.[paramsIndex2(meter.meter_type).datatime]?.split(' ')[0]
+        const date = data[0]?.[paramsIndex2(meter.meter_type).datatime]?.split('/')[1].split('.').reverse()
+        date[0] = '' + 20 + date[0]
+        const datatime = new Date(...date.concat(time.split(':')))
+        datatime.setMonth(datatime.getMonth() - 1)
+
+        const result = Math.abs(datatime - new Date())
+
+        if ((result / 1000) <= meter.time_difference) {
+            console.log('date o`tdi')
+            return 'ok'
+        } else {
+            return
+        }
+    } catch (error) {
+        console.log(error)
+        return
+    }
+};
+
 module.exports.previousCheking = async () => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -277,21 +305,24 @@ module.exports.previousCheking = async () => {
                 for (let i = 0; i < previous.length; i++) {
                     const meter = await repositories().meterRepository().findOne(previous[i].meter_id)
 
-                    if (previous[i].archive - yesterday < 0) {
-                        console.log('archive boshlandi')
-                        await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
-                            await archiveFill(meter, previous[i].archive).then(async () => {
-                                await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
+                    const date = await checkDate(meter)
+                    if (date) {
+                        if (previous[i].archive - yesterday < 0) {
+                            console.log('archive boshlandi')
+                            await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
+                                await archiveFill(meter, previous[i].archive).then(async () => {
+                                    await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
+                                })
                             })
-                        })
-                    }
-                    if (previous[i].billing - yesterday < 0) {
-                        console.log('billing boshlandi')
-                        await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
-                            await billingFill(meter, previous[i].billing).then(async () => {
-                                await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
+                        }
+                        if (previous[i].billing - yesterday < 0) {
+                            console.log('billing boshlandi')
+                            await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
+                                await billingFill(meter, previous[i].billing).then(async () => {
+                                    await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
+                                })
                             })
-                        })
+                        }
                     }
                 }
                 resolve('finish')

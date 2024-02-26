@@ -11,11 +11,11 @@ module.exports.startMiddleware = async (status, sendMessage) => {
     const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "current" } })
     if (status === 'run-app') {
         bool = false
-        // await previousCheking()
+        await previousCheking()
     }
 
     bool = true
-    // await getDataFromMiddleware(meters, sendMessage)
+    await getDataFromMiddleware(meters, sendMessage)
 }
 
 const getDataFromMiddleware = async (meters, sendMessage) => {
@@ -30,7 +30,7 @@ const getDataFromMiddleware = async (meters, sendMessage) => {
                 })
                 await checkDate(meters[i], parameterIds, sendMessage).then(console.log)
             }
-            await getDataFromMiddleware(meters, sendMessage)
+            // await getDataFromMiddleware(meters, sendMessage)
         }
     } catch (err) {
         console.log(err);
@@ -41,6 +41,7 @@ const checkDate = async (meter, parameterIds, sendMessage) => {
     return new Promise(async (resolve, reject) => {
         try {
             const chech_date_fn = async () => {
+                console.log(meter.meter_type)
                 sendMessage(meter._id, 'send', 'date')
                 const journalParameter = { meter: meter._id, request_type: "archive", status: "sent" }
                 const newJournalDocument = await repositories().journalRepository().insert(journalParameter)
@@ -56,8 +57,8 @@ const checkDate = async (meter, parameterIds, sendMessage) => {
                 const requestString = requestDateTime(meter)
                 const data = await serialPort(requestString)
 
-                const time = data[0]?.['1.15.0']?.split(' ')[0]
-                const date = data[0]?.['1.15.0']?.split('/')[1].split('.').reverse()
+                const time = data[0]?.[paramsIndex2(meter.meter_type).datatime]?.split(' ')[0]
+                const date = data[0]?.[paramsIndex2(meter.meter_type).datatime]?.split('/')[1].split('.').reverse()
                 date[0] = '' + 20 + date[0]
                 const datatime = new Date(...date.concat(time.split(':')))
                 datatime.setMonth(datatime.getMonth() - 1)
