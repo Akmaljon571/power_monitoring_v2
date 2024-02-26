@@ -1,4 +1,4 @@
-const { paramsOBISReadFile } = require('../global/file-path')
+const { paramsOBISReadFile, paramsIndex2 } = require('../global/file-path')
 const { energyarchive, real_time_variable } = require('../global/variable')
 const { repositories } = require('../repository')
 const { serialPort } = require('../server/utils/serialport/serialport')
@@ -11,11 +11,11 @@ module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "current" } })
     if (status === 'run-app') {
         bool = false
-        // await previousCheking()
+        await previousCheking()
     }
 
     bool = true
-    // await getDataFromMiddleware(meters, sendMessage, realTime)
+    await getDataFromMiddleware(meters, sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (meters, sendMessage, realTime) => {
@@ -100,15 +100,22 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
 const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime) => {
     return new Promise(async (resolve, reject) => {
         try {
+            if(!paramsIndex2(meter.meter_type).archive) {
+                await repositories().previousObjectRepository().updateLoop(meter._id, new Date())
+                await billingData(meter, parameterIds, sendMessage, realTime).then(() => {
+                    resolve('next')
+                })
+                return
+            }
+
+
             const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "archive" } })
             const shotchik = meters.find(e => String(e._id) == String(meter._id)).parameters
             let activePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[0])
             let activePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[1])
             let reactivePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[2])
             let reactivePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[3])
-            console.log(activePowerMinus)
             const checkTime = await repositories().parameterValueRepository().findTodayList(activePowerPlus._id)
-            console.log(checkTime, new Date())
 
             if (checkTime.last_join - new Date() > 0) {
                 sendMessage(meter._id, 'end', 'archive')
@@ -202,6 +209,18 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
 const billingData = async (meter, parameterIds, sendMessage, realTime) => {
     return new Promise(async (resolve, reject) => {
         try {
+            const yesterday = new Date();
+            yesterday.setUTCHours(0, 0, 0, 0)
+            yesterday.setDate(new Date().getDate() - 1)
+
+            if(!paramsIndex2(meter.meter_type).billing) {
+                await repositories().previousObjectRepository().update(meter._id, '', yesterday)
+                await currentData(meter, parameterIds, sendMessage, realTime).then(() => {
+                    resolve('next')
+                })
+                return
+            }
+
             if (await repositories().billingRepository().findToday(meter._id)) {
                 console.log('billing ketdi')
                 sendMessage(meter._id, 'end', 'billing')
@@ -210,9 +229,6 @@ const billingData = async (meter, parameterIds, sendMessage, realTime) => {
                 })
                 return
             }
-            const yesterday = new Date();
-            yesterday.setUTCHours(0, 0, 0, 0)
-            yesterday.setDate(new Date().getDate() - 1)
 
             const requestString = requestBilling(meter, yesterday, yesterday)
             const data = await serialPort(requestString)
