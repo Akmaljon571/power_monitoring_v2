@@ -52,8 +52,6 @@ module.exports.meterRepository = () => {
                 {
                     $lookup: {
                         from: "parameters",
-                        foreignField: "meter",
-                        localField: "_id",
                         pipeline: subPipArray,
                         as: "parameters"
                     }
