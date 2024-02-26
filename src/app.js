@@ -38,4 +38,4 @@ const sendMessage = (id, status, where) => {
 }
 
 startMiddleware('run-app', sendMessage, realTime)
-connectDB(server, PORT, DB).then(() => { }).catch(console.log);
+connectDB(server, PORT, DB).then(() => { }).catch((err) => console.log(err));
