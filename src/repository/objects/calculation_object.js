@@ -600,8 +600,7 @@ module.exports.calculationObjectRepository = () => {
     async function findOneAndDataList(id, query) {
         try {
             let modelname = 'parameter_values'
-            let existList = query.selectedParameters ? query.selectedParameters : energytotal
-
+            let existList = query.selectedParameters ? JSON.parse(query.selectedParameters) : energytotal
             if (query.type === "current") {
                 modelname = query && query.modelDate ? "parameter_values_" + new Date(query.modelDate).getFullYear() + new Date(query.modelDate).getMonth() : "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
             }
@@ -662,16 +661,14 @@ module.exports.calculationObjectRepository = () => {
                     }
                 },
                 {
-                    "$group": {
-                        "_id": "$_id",
-                        "parameters": {
-                            "$push": "$parameters"
-                        },
-                        "name": { $first: "$name" },
-                        "type": { $first: "$type" },
-                        "createdAt": { $first: "$createdAt" },
-                        "updatedAt": { $first: "$updatedAt" },
-                        "child_objects": { $first: "$child_objects" },
+                    $group: {
+                        _id: "$_id",
+                        parameters: { $push: "$parameters" },
+                        name: { $first: "$name" },
+                        type: { $first: "$type" },
+                        createdAt: { $first: "$createdAt" },
+                        updatedAt: { $first: "$updatedAt" },
+                        child_objects: { $first: "$child_objects" }
                     }
                 },
                 {
@@ -687,7 +684,12 @@ module.exports.calculationObjectRepository = () => {
                                     ]
                                 }
                             }
-                        }
+                        },
+                        name: 1,
+                        type: 1,
+                        createdAt: 1,
+                        updatedAt: 1,
+                        child_objects: 1
                     }
                 },
                 {
@@ -703,16 +705,14 @@ module.exports.calculationObjectRepository = () => {
                     }
                 },
                 {
-                    "$group": {
-                        "_id": "$_id",
-                        "parameters": {
-                            "$push": "$parameters"
-                        },
-                        "name": { $first: "$name" },
-                        "type": { $first: "$type" },
-                        "createdAt": { $first: "$createdAt" },
-                        "updatedAt": { $first: "$updatedAt" },
-                        "child_objects": { $first: "$child_objects" },
+                    $group: {
+                        _id: "$_id",
+                        parameters: { $push: "$parameters" },
+                        name: { $first: "$name" },
+                        type: { $first: "$type" },
+                        createdAt: { $first: "$createdAt" },
+                        updatedAt: { $first: "$updatedAt" },
+                        child_objects: { $first: "$child_objects" }
                     }
                 }
             ]

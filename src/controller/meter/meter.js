@@ -1,3 +1,4 @@
+const { SerialPort } = require('serialport')
 const { startMiddleware } = require("../../connection")
 const { paramsReadFile } = require("../../global/file-path")
 const { meterListReadFile } = require("../../global/meter-list")
@@ -194,6 +195,16 @@ module.exports.paramsList = async (req, res) => {
 module.exports.meterList = async (req, res) => {
     try {
         res.status(200).json({ status: 200, error: null, data: meterListReadFile() })
+    } catch (err) {
+        const error = new CustomError(err.status, err.message)
+        res.status(error.status).json({ status: error.status, error: error.message, data: null })
+    }
+}
+
+module.exports.portList = async (req, res) => {
+    try {
+        const list = await SerialPort.list()
+        res.status(200).json({ status: 200, error: null, data: list })
     } catch (err) {
         const error = new CustomError(err.status, err.message)
         res.status(error.status).json({ status: error.status, error: error.message, data: null })

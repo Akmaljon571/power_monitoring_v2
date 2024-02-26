@@ -15,7 +15,7 @@ module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     }
 
     bool = true
-    await getDataFromMiddleware(meters, sendMessage, realTime)
+    // await getDataFromMiddleware(meters, sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (meters, sendMessage, realTime) => {
