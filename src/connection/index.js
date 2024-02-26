@@ -64,18 +64,18 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
 
                 const result = Math.abs(datatime - new Date())
 
-                // if ((result / 1000) <= meter.time_difference) {
+                if ((result / 1000) <= meter.time_difference) {
                     console.log('date o`tdi')
                     sendMessage(meter._id, 'end', 'date')
                     await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime).then((res) => {
                         console.log(res)
                         resolve('ok')
                     })
-                // } else {
-                //     await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "failed" })
-                //     sendMessage(meter._id, "Error", 'date')
-                //     resolve('ok')
-                // }
+                } else {
+                    await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "failed" })
+                    sendMessage(meter._id, "Error", 'date')
+                    resolve('ok')
+                }
             }
 
             const date = new Date()
@@ -115,9 +115,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
             let activePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[1])
             let reactivePowerPlus = shotchik.find(e => e.param_short_name === energyarchive[2])
             let reactivePowerMinus = shotchik.find(e => e.param_short_name === energyarchive[3])
-            console.log(activePowerMinus)
             const checkTime = await repositories().parameterValueRepository().findTodayList(activePowerPlus._id)
-            console.log(checkTime, new Date())
 
             if (checkTime.last_join - new Date() > 0) {
                 sendMessage(meter._id, 'end', 'archive')

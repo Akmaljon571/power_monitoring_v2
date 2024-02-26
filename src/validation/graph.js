@@ -22,5 +22,6 @@ module.exports.vector = Joi.object().keys({
     date1: Joi.string(),
     date2: Joi.string(),
     modelname: Joi.string(),
-    paramDate: Joi.string()
+    paramDate: Joi.string(),
+    coefficient: Joi.boolean()
 }).required()

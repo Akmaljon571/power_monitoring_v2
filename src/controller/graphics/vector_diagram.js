@@ -5,11 +5,13 @@ const { sortvalueObjectsForVectorDiagram } = require("../../utils/sortValueByDat
 module.exports.getVectorDiagramData = async(req, res) => {
     try {
         const { id } = req.params
-        const query = req.data
+        const data = req.data
+
+        const query = {...data, startDate: data.date1, finishDate: data.date2}
 
         const digramDocuments = await repositories().electObjectRepository().findOneVectorDiagram(id, query)
         let result = new Map()
-        if (digramDocuments) result = await sortvalueObjectsForVectorDiagram(digramDocuments.parameters,query)
+        if (digramDocuments) result = await sortvalueObjectsForVectorDiagram(digramDocuments.parameters, query)
 
         res.status(200).json({ status: 200, error: null, data: Object.fromEntries(result) })
     } catch (err) {
