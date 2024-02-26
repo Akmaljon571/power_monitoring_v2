@@ -42,28 +42,30 @@ module.exports.meterRepository = () => {
 
     async function findAll(query) {
         try {
-            const subPipArray = [
-                { $match: { parameter_type: { $ne: null } } }
-            ]
-            if (query && query.subquery) {
-                subPipArray.push({ $match: { parameter_type: query.subquery.parameter_type } })
-            }
-            const pipArray = [
+            const pipeline = [
                 {
                     $lookup: {
                         from: "parameters",
-                        pipeline: subPipArray,
+                        let: { meterId: "$_id" },
+                        pipeline: [
+                            { $match: { 
+                                $expr: { $eq: ["$meter", "$$meterId"] },
+                                parameter_type: query.subquery.parameter_type
+                            }}
+                        ],
                         as: "parameters"
                     }
                 }
-            ]
-            const meterDocuments = await meterModel.aggregate(pipArray)
-            return meterDocuments
+            ];
+    
+            const meterDocuments = await meterModel.aggregate(pipeline);
+            return meterDocuments;
         } catch (err) {
-            console.error('Error in findAll:', err);
+            console.error('findAll funktsiyasida xato:', err);
             throw new CustomError(500, err.message);
         }
-    };
+    }
+    
     
     async function findById(_id) {
         try {
