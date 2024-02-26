@@ -11,11 +11,11 @@ module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "current" } })
     if (status === 'run-app') {
         bool = false
-        await previousCheking()
+        // await previousCheking()
     }
 
     bool = true
-    await getDataFromMiddleware(meters, sendMessage, realTime)
+    // await getDataFromMiddleware(meters, sendMessage, realTime)
 }
 
 const getDataFromMiddleware = async (meters, sendMessage, realTime) => {

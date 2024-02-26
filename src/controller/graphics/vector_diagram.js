@@ -5,8 +5,7 @@ const { sortvalueObjectsForVectorDiagram } = require("../../utils/sortValueByDat
 module.exports.getVectorDiagramData = async(req, res) => {
     try {
         const { id } = req.params
-        const data = req.data
-        const query = {...data, startDate: data.date1, finishDate: data.date2}
+        const query = req.data
 
         const digramDocuments = await repositories().electObjectRepository().findOneVectorDiagram(id, query)
         let result = new Map()
