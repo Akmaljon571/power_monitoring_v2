@@ -39,10 +39,7 @@ const sendMessage = (id, status, where) => {
 
 connectDB(server, PORT, DB).then(() => {
     console.log('Database connected successfully');
+    startMiddleware('run-app', sendMessage, realTime).catch(error => {
+        console.error('Error in startMiddleware:', error);
+    });
 })
-.catch((err) => {
-    console.error('Error connecting to the database:', err);
-});
-startMiddleware('run-app', sendMessage, realTime).catch(error => {
-    console.error('Error in startMiddleware:', error);
-});
