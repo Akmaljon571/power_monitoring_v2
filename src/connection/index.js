@@ -1,5 +1,5 @@
 const { paramsOBISReadFile, paramsIndex2 } = require('../global/file-path')
-const { energyarchive, real_time_variable } = require('../global/variable')
+const { energyarchive } = require('../global/variable')
 const { repositories } = require('../repository')
 const { serialPort } = require('../server/utils/serialport/serialport')
 const { previousCheking } = require('./previous')
