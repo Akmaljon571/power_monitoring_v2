@@ -1,3 +1,4 @@
+const { paramsIndex2 } = require("../global/file-path");
 const { energyarchive } = require("../global/variable");
 const { repositories } = require("../repository");
 const { serialPort } = require("../server/utils/serialport/serialport");
@@ -21,6 +22,11 @@ const filterPrevious = async () => {
 const archiveFill = async (meter, oldDate) => {
     try {
         const previousDate = new Date(oldDate)
+
+        if(!paramsIndex2(meter.meter_type).archive) {
+            await repositories().previousObjectRepository().update(meter._id, yesterday)
+            return
+        }
 
         const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "archive" } })
         const shotchik = meters.find(e => String(e._id) == String(meter._id)).parameters
@@ -102,6 +108,11 @@ const archiveFill = async (meter, oldDate) => {
 
 const billingFill = async (meter, oldDate) => {
     try {
+        if(!paramsIndex2(meter.meter_type).billing) {
+            await repositories().previousObjectRepository().update(meter._id, '', yesterday)
+            return
+        }
+
         const previousDate = new Date(oldDate)
         const twoDayAgo = new Date();
         twoDayAgo.setUTCHours(0, 0, 0, 0)
