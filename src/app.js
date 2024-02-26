@@ -27,15 +27,10 @@ app.use(cookieParser());
 app.use(router);
 app.use(ErrorHandle);
 
-const realTime = (data) => {
-    // console.log(data, "real-time")
-    io.emit("real-time", { data });
-}
-
 const sendMessage = (id, status, where) => {
     console.log(id, status, where)
     io.emit("send-message", { id, status, where });
 }
 
-startMiddleware('run-app', sendMessage, realTime).catch(console.log);
+startMiddleware('run-app', sendMessage).catch(console.log);
 connectDB(server, PORT, DB).then(() => {})

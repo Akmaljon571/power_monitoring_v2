@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 const { electObjectModel, folderModel, billingModel, parameterModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
-const { energyarchive, energytotal } = require("../../global/variable")
+const { energyarchive, energytotal, realTimeVariable } = require("../../global/variable")
 const { all_short_name } = require("../../global/file-path")
 
 module.exports.electObjectRepository = () => {
@@ -22,7 +22,8 @@ module.exports.electObjectRepository = () => {
         findOneAndDashboard,
         firstTemplateReport,
         remove,
-        insertParentParams
+        insertParentParams,
+        realTime
     })
 
     async function countDocuments(args) {
@@ -49,6 +50,121 @@ module.exports.electObjectRepository = () => {
             return result
         } catch (err) {
             throw new CustomError(500, err.message)
+        }
+    }
+
+    async function realTime(id) {
+        try {
+            let modelname = "parameter_values_" + new Date().getFullYear() + new Date().getMonth()
+            let subPipArray = [
+                {
+                    $sort: {
+                        date: -1
+                    }
+                }
+            ]
+            const electObjectPipelines = [
+                {
+                    $match: {
+                        _id: new mongoose.Types.ObjectId(id)
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$parameters",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "parameters",
+                        localField: "parameters.parameter_id",
+                        foreignField: "_id",
+                        as: "parameters.param_details"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$parameters.param_details",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$_id",
+                        "parameters": {
+                            "$push": "$parameters"
+                        },
+                        "name": { $first: "$name" },
+                        "type": { $first: "$type" },
+                        "createdAt": { $first: "$createdAt" },
+                        "updatedAt": { $first: "$updatedAt" },
+                        "child_objects": { $first: "$child_objects" },
+                    }
+                },
+                {
+                    $project: {
+                        parameters: {
+                            $filter: {
+                                input: "$parameters",
+                                as: "param",
+                                cond: {
+                                    $in: [
+                                        "$$param.param_details.param_short_name",
+                                        realTimeVariable
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $unwind: "$parameters"
+                },
+                {
+                    $lookup: {
+                        from: modelname,
+                        localField: "parameters.param_details._id",
+                        foreignField: "parameter",
+                        pipeline: subPipArray,
+                        as: "parameters.parameter_values"
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": "$_id",
+                        "parameters": {
+                            "$push": "$parameters"
+                        },
+                        "name": { $first: "$name" },
+                        "type": { $first: "$type" },
+                        "createdAt": { $first: "$createdAt" },
+                        "updatedAt": { $first: "$updatedAt" },
+                        "child_objects": { $first: "$child_objects" },
+                    }
+                }
+            ]
+
+            const realtimeDocuments = await electObjectModel.aggregate(electObjectPipelines)
+
+            const realTimeData = { date: new Date(), "AP": "0", "RP": "0", "FP": "0", "CP": "0" }
+            realtimeDocuments[0].parameters.map(e => {
+                if (e.param_details.param_short_name == realTimeVariable[0]) {
+                    realTimeData.AP = e.parameter_values[0].value
+                } else if (e.param_details.param_short_name == realTimeVariable[1]) {
+                    realTimeData.RP = e.parameter_values[0].value
+                } else if (e.param_details.param_short_name == realTimeVariable[2]) {
+                    realTimeData.FP = e.parameter_values[0].value
+                } else if (e.param_details.param_short_name == realTimeVariable[3]) {
+                    realTimeData.CP = e.parameter_values[0].value
+                }
+
+            })
+
+            return realTimeData
+        } catch (err) {
+            console.log(err)
+            throw new Error(err.message)
         }
     }
 

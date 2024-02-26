@@ -7,7 +7,7 @@ const { requestBilling, requestArchive, requestDateTime, requestCurrent } = requ
 
 let bool = true
 
-module.exports.startMiddleware = async (status, sendMessage, realTime) => {
+module.exports.startMiddleware = async (status, sendMessage) => {
     const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "current" } })
     if (status === 'run-app') {
         bool = false
@@ -15,10 +15,10 @@ module.exports.startMiddleware = async (status, sendMessage, realTime) => {
     }
 
     bool = true
-    // await getDataFromMiddleware(meters, sendMessage, realTime)
+    // await getDataFromMiddleware(meters, sendMessage)
 }
 
-const getDataFromMiddleware = async (meters, sendMessage, realTime) => {
+const getDataFromMiddleware = async (meters, sendMessage) => {
     try {
         if (bool) {
             for (let i in meters) {
@@ -28,16 +28,16 @@ const getDataFromMiddleware = async (meters, sendMessage, realTime) => {
                         parameterIds.push(`${param.channel_full_id}`)
                     }
                 })
-                await checkDate(meters[i], parameterIds, sendMessage, realTime).then(console.log)
+                await checkDate(meters[i], parameterIds, sendMessage).then(console.log)
             }
-            await getDataFromMiddleware(meters, sendMessage, realTime)
+            await getDataFromMiddleware(meters, sendMessage)
         }
     } catch (err) {
         console.log(err);
     }
 }
 
-const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
+const checkDate = async (meter, parameterIds, sendMessage) => {
     return new Promise(async (resolve, reject) => {
         try {
             const chech_date_fn = async () => {
@@ -46,7 +46,7 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
                 const newJournalDocument = await repositories().journalRepository().insert(journalParameter)
 
                 if (!meter.time_difference) {
-                    await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime).then((res) => {
+                    await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage).then((res) => {
                         console.log(res)
                         resolve({ txt: 'no time given', meter: meter.meter_type })
                     })
@@ -67,7 +67,7 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
                 if ((result / 1000) <= meter.time_difference) {
                     console.log('date o`tdi')
                     sendMessage(meter._id, 'end', 'date')
-                    await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage, realTime).then((res) => {
+                    await archiveData(meter, parameterIds, newJournalDocument._id, sendMessage).then((res) => {
                         console.log(res)
                         resolve('ok')
                     })
@@ -97,12 +97,12 @@ const checkDate = async (meter, parameterIds, sendMessage, realTime) => {
     });
 };
 
-const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime) => {
+const archiveData = async (meter, parameterIds, journalId, sendMessage) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if(!paramsIndex2(meter.meter_type).archive) {
+            if (!paramsIndex2(meter.meter_type).archive) {
                 await repositories().previousObjectRepository().updateLoop(meter._id, new Date())
-                await billingData(meter, parameterIds, sendMessage, realTime).then(() => {
+                await billingData(meter, parameterIds, sendMessage).then(() => {
                     resolve('next')
                 })
                 return
@@ -119,7 +119,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
 
             if (checkTime.last_join - new Date() > 0) {
                 sendMessage(meter._id, 'end', 'archive')
-                await billingData(meter, parameterIds, sendMessage, realTime).then((res) => {
+                await billingData(meter, parameterIds, sendMessage).then((res) => {
                     console.log(res)
                     resolve('next')
                 })
@@ -138,7 +138,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
 
             let valuesList = []
             data.map((element) => {
-                if(element?.status != undefined && element?.status == 0) {
+                if (element?.status != undefined && element?.status == 0) {
                     return
                 }
                 const date = dateTime(element?.date)
@@ -147,7 +147,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
                 const check1 = date - today <= 0
                 let check2 = true
                 let check3 = true
-                if(checkTime.last_add) {
+                if (checkTime.last_add) {
                     check2 = today - checkTime.last_add > 0
                     check3 = date - new Date(checkTime.last_join) >= 0
                 }
@@ -191,7 +191,7 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
             console.log(valuesList.length, 'valueList Archive')
             sendMessage(meter._id, 'end', 'archive')
 
-            await billingData(meter, parameterIds, sendMessage, realTime).then(async () => {
+            await billingData(meter, parameterIds, sendMessage).then(async () => {
                 await repositories().parameterValueRepository().insert(false, valuesList)
                 await repositories().journalRepository().update({ _id: journalId, status: "succeed" })
                 await repositories().previousObjectRepository().updateLoop(meter._id, new Date())
@@ -206,16 +206,16 @@ const archiveData = async (meter, parameterIds, journalId, sendMessage, realTime
     })
 }
 
-const billingData = async (meter, parameterIds, sendMessage, realTime) => {
+const billingData = async (meter, parameterIds, sendMessage) => {
     return new Promise(async (resolve, reject) => {
         try {
             const yesterday = new Date();
             yesterday.setUTCHours(0, 0, 0, 0)
             yesterday.setDate(new Date().getDate() - 1)
 
-            if(!paramsIndex2(meter.meter_type).billing) {
+            if (!paramsIndex2(meter.meter_type).billing) {
                 await repositories().previousObjectRepository().update(meter._id, '', yesterday)
-                await currentData(meter, parameterIds, sendMessage, realTime).then(() => {
+                await currentData(meter, parameterIds, sendMessage).then(() => {
                     resolve('next')
                 })
                 return
@@ -224,7 +224,7 @@ const billingData = async (meter, parameterIds, sendMessage, realTime) => {
             if (await repositories().billingRepository().findToday(meter._id)) {
                 console.log('billing ketdi')
                 sendMessage(meter._id, 'end', 'billing')
-                await currentData(meter, parameterIds, sendMessage, realTime).then(() => {
+                await currentData(meter, parameterIds, sendMessage).then(() => {
                     resolve('next')
                 })
                 return
@@ -316,7 +316,7 @@ const billingData = async (meter, parameterIds, sendMessage, realTime) => {
             console.log(valueList.length, 'valueList billing')
             sendMessage(meter._id, 'end', 'billing')
 
-            await currentData(meter, parameterIds, sendMessage, realTime).then(async () => {
+            await currentData(meter, parameterIds, sendMessage).then(async () => {
                 await repositories().billingRepository().insert(valueList)
                 await repositories().previousObjectRepository().update(meter._id, '', yesterday)
             }).finally(() => {
@@ -330,7 +330,7 @@ const billingData = async (meter, parameterIds, sendMessage, realTime) => {
     })
 }
 
-const currentData = async (meter, list, sendMessage, realTime) => {
+const currentData = async (meter, list, sendMessage) => {
     return new Promise(async (resolve, reject) => {
         try {
             let journalParameter = {
@@ -342,30 +342,18 @@ const currentData = async (meter, list, sendMessage, realTime) => {
             let newJournalDocument = await repositories().journalRepository().insert(journalParameter)
 
             const requestString = requestCurrent(meter, list)
-           
+
             const data = await serialPort(requestString)
-            
+
             const date = new Date()
             const modelDate = "" + date.getFullYear() + date.getMonth()
-            const realTimeData = { date: new Date(), "AP": "0", "RP": "0", "FP": "0", "CP": "0" }
             const valueList = []
 
-            const realTimeVariable = real_time_variable(meter.meter_type)
             const existsObis = paramsOBISReadFile(meter.meter_type)
 
             for (let i = 0; i < list.length; i++) {
-
-                if(existsObis.includes(list[i])) {
+                if (existsObis.includes(list[i])) {
                     let parameter = await repositories().parameterRepository().findOne({ channel_full_id: list[i], meter: meter._id })
-                    if (list[i] == realTimeVariable[0]) {
-                        realTimeData.AP = data[i][list[i]]
-                    } else if (list[i] == realTimeVariable[1]) {
-                        realTimeData.RP = data[i][list[i]]
-                    } else if (list[i] == realTimeVariable[2]) {
-                        realTimeData.FP = data[i][list[i]]
-                    } else if (list[i] == realTimeVariable[3]) {
-                        realTimeData.CP = data[i][list[i]]
-                    }
 
                     if (parameter) {
                         const result = { value: data[i][list[i]], date, parameter: parameter._id }
@@ -377,7 +365,6 @@ const currentData = async (meter, list, sendMessage, realTime) => {
             }
 
             await repositories().parameterValueRepository().insert(modelDate, valueList).then(async () => {
-                realTime(realTimeData)
                 await repositories().journalRepository().update({ _id: newJournalDocument._id, status: "succeed" })
                 sendMessage(meter._id, "end", 'current')
             }).finally(() => {
