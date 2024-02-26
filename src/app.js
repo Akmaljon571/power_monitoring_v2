@@ -37,5 +37,5 @@ const sendMessage = (id, status, where) => {
     io.emit("send-message", { id, status, where });
 }
 
-startMiddleware('run-app', sendMessage, realTime)
+startMiddleware('run-app', sendMessage, realTime).catch(console.log)
 connectDB(server, PORT, DB).then(() => { }).catch((err) => console.log(err));
