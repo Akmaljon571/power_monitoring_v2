@@ -15,7 +15,7 @@ module.exports.meterRepository = () => {
         updateUSPD
     })
 
-    async function countDocuments(args){
+    async function countDocuments(args) {
         try {
             return await meterModel.countDocuments(args)
         } catch (err) {
@@ -36,67 +36,68 @@ module.exports.meterRepository = () => {
         try {
             return await meterModel.find()
         } catch (error) {
-           throw new CustomError(error.status, error.message) 
+            throw new CustomError(error.status, error.message)
         }
     }
 
-    async function findAll(query){
-        try{
-              const subPipArray = [
-                { $match: { parameter_type : { $ne: null } } }
-              ]
-              if(query && query.subquery){
-                subPipArray.push({$match:{parameter_type:query.subquery.parameter_type}})
-              }
-              const pipArray = [
-                 {
-                    $lookup:{
-                        from:"parameters",
-                        foreignField:"meter",
-                        localField:"_id",
-                        pipeline:subPipArray,
-                        as:"parameters"
+    async function findAll(query) {
+        try {
+            const subPipArray = [
+                { $match: { parameter_type: { $ne: null } } }
+            ]
+            if (query && query.subquery) {
+                subPipArray.push({ $match: { parameter_type: query.subquery.parameter_type } })
+            }
+            const pipArray = [
+                {
+                    $lookup: {
+                        from: "parameters",
+                        foreignField: "meter",
+                        localField: "_id",
+                        pipeline: subPipArray,
+                        as: "parameters"
                     }
                 }
-              ]
-               const meterDocuments = await meterModel.aggregate(pipArray)
-               return meterDocuments
-        }catch(err){
-              throw new CustomError(500, err.message)
+            ]
+            const meterDocuments = await meterModel.aggregate(pipArray)
+            return meterDocuments
+        } catch (err) {
+            console.error('Error in findAll:', err);
+            throw new CustomError(500, err.message);
         }
-    }
- 
+    };
+    
     async function findById(_id) {
         try {
-            return await meterModel.findById({_id})
+            return await meterModel.findById({ _id })
         } catch (error) {
             throw new CustomError(500, err.message)
         }
     }
 
-    async function findOne(id){
-        try{
+    async function findOne(id) {
+        try {
             const meterDocuments = await meterModel.aggregate([
                 {
-                    $match:{ _id: new mongoose.Types.ObjectId(id) }
+                    $match: { _id: new mongoose.Types.ObjectId(id) }
                 },
-                {   
-                    $lookup:{
-                        from:"parameters",
-                        foreignField:"meter",
-                        localField:"_id",
-                        as:"parameters"
+                {
+                    $lookup: {
+                        from: "parameters",
+                        foreignField: "meter",
+                        localField: "_id",
+                        as: "parameters"
                     }
                 }
             ])
-             return meterDocuments[0]
-        }catch(err){
-           throw new CustomError(500, err.message)
+            return meterDocuments[0]
+        } catch (err) {
+            throw new CustomError(500, err.message)
         }
     }
-    
-    async function updateOne(id, data){
-        try{
+
+    async function updateOne(id, data) {
+        try {
             const find = await meterModel.findById(id)
             let meter_param = {
                 name: data.name ? data.name : find.name,
@@ -123,15 +124,15 @@ module.exports.meterRepository = () => {
                 hours_of_day: data.hours_of_day ? data.hours_of_day : find.hours_of_day,
             }
 
-            const meterDocuments = await meterModel.updateOne({_id:id}, meter_param)
+            const meterDocuments = await meterModel.updateOne({ _id: id }, meter_param)
             return meterDocuments
-        }catch(err){
-           throw new CustomError(500, err.message)
+        } catch (err) {
+            throw new CustomError(500, err.message)
         }
     }
 
-    async function updateCOMOne(id, data){
-        try{
+    async function updateCOMOne(id, data) {
+        try {
             const find = await meterModel.findById(id)
             let meter_param = {
                 name: data.name ? data.name : find.name,
@@ -161,13 +162,13 @@ module.exports.meterRepository = () => {
                 hours_of_day: data.hours_of_day ? data.hours_of_day : find.hours_of_day,
             }
 
-            const meterDocuments = await meterModel.updateOne({_id:id}, meter_param)
+            const meterDocuments = await meterModel.updateOne({ _id: id }, meter_param)
             return meterDocuments
-        }catch(err){
-           throw new CustomError(500, err.message)
+        } catch (err) {
+            throw new CustomError(500, err.message)
         }
     }
-    
+
     async function updateUSPD(id, data) {
         const find = await meterModel.findById(id)
         let meter_param = {
