@@ -2,11 +2,11 @@
 node_modules
 /dist
 electron-builder-output-dir
-# .env
+.env
 
 # local env files
-# .env
-# .env.*.local
+.env
+.env.*.local
 
 # Log files
 npm-debug.log*
