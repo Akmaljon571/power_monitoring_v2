@@ -97,7 +97,6 @@ module.exports.billingRepository = () => {
           result[feeder[meters[i].parent_object].parent] = []
         }
 
-        console.log(oneData, twoData)
         result[feeder[meters[i].parent_object].parent].push({
           nomer: meter.number_meter,
           feeder: feeder[meters[i].parent_object].name,
@@ -129,7 +128,6 @@ module.exports.billingRepository = () => {
           tarif4_R0: oneData.tarif4_R0 != undefined && twoData.tarif4_R0 != undefined ? twoData.tarif4_R0 - oneData.tarif4_R0 : null,
         })
       }
-      console.log(result)
       return result;
     } catch (error) {
       console.error('Error in findList:', error);

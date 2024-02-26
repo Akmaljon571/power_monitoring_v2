@@ -1,5 +1,5 @@
 const { all_short_name } = require("../global/file-path")
-const { vectorMultiplyVoltage, vectorMultiplyCurrent, energyarchive } = require("../global/variable")
+const { vectorMultiplyVoltage, vectorMultiplyCurrent } = require("../global/variable")
 const CustomError = require("./custom_error")
 
 module.exports.sortvalueObjectsForVectorDiagram = async (parameters, query) => {

@@ -6,7 +6,7 @@ module.exports.getVectorDiagramData = async(req, res) => {
     try {
         const { id } = req.params
         const query = req.data
-
+        
         const digramDocuments = await repositories().electObjectRepository().findOneVectorDiagram(id, query)
         let result = new Map()
         if (digramDocuments) result = await sortvalueObjectsForVectorDiagram(digramDocuments.parameters,query)

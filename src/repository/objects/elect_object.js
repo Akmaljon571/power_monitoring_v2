@@ -1014,7 +1014,6 @@ module.exports.electObjectRepository = () => {
             ]
 
             const electObjectDocument = await electObjectModel.aggregate(electObjectPipelines, { maxTimeMS: 50000 })
-            console.log(electObjectDocument[0])
             return electObjectDocument[0]
         } catch (err) {
             throw new CustomError(500, err.message)
@@ -1057,8 +1056,8 @@ module.exports.electObjectRepository = () => {
 
             for (let i = 0; i < meters.length; i++) {
                 let billingAll = await billingModel.find({ meter_id: meters[i].meter_id })
-                billingAll = billingAll.filter(e => e.date >= startDate && e.date <= finishDate)  
-                
+                billingAll = billingAll.filter(e => e.date >= startDate && e.date <= finishDate)
+
                 for (let j = 0; j < billingAll.length; j++) {
                     const billing = billingAll[j]
                     const multiplyA = meters[i].parameters.find(e => String(paramA._id) == String(e.parameter_id))
@@ -1067,8 +1066,8 @@ module.exports.electObjectRepository = () => {
                     for (let i = 0; i < multiplyR.multiply.length; i++) {
                         general_rplus *= multiplyR.multiply[i]
                     }
-    
-                    if(!result.has(new Date(billing.date).getTime())) {
+
+                    if (!result.has(new Date(billing.date).getTime())) {
                         const data = {
                             first_tariff: billing.tarif1_A1,
                             second_tariff: billing.tarif2_A1,
@@ -1077,12 +1076,12 @@ module.exports.electObjectRepository = () => {
                             general_aplus: billing.summa_A1,
                             general_rplus
                         }
-        
+
                         result.set(new Date(billing.date).getTime(), data)
                     } else {
                         const obj = result.get(new Date(billing.date).getTime())
 
-                        if(multiplyA.sign) {
+                        if (multiplyA.sign) {
                             obj.first_tariff += billing.tarif1_A1
                             obj.second_tariff += billing.tarif2_A1
                             obj.third_tariff += billing.tarif3_A1
