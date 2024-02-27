@@ -6,8 +6,9 @@ const { previousCheking } = require('./previous')
 const { requestBilling, requestArchive, requestDateTime, requestCurrent } = require('./request')
 
 let bool = true
+let sendMessageFN
 
-module.exports.startMiddleware = async (status, sendMessage) => {
+module.exports.startMiddleware = async (status, sendMessage=sendMessageFN) => {
     const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "current" } })
     if (status === 'run-app') {
         bool = false
@@ -30,7 +31,9 @@ const getDataFromMiddleware = async (meters, sendMessage) => {
                 })
                 await checkDate(meters[i], parameterIds, sendMessage).then(console.log)
             }
-            // await getDataFromMiddleware(meters, sendMessage)
+            if(meters.length) {
+                await getDataFromMiddleware(meters, sendMessage)
+            }
         }
     } catch (err) {
         console.log(err);

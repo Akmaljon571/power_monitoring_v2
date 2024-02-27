@@ -73,11 +73,12 @@ module.exports.createMeter = async (req, res) => {
             throw new CustomError(400, "undefined type")
         }
 
-        // startMiddleware('run-app')
         res.status(201).json({ status: 201, error: null, data: "Succesfull saved" })
     } catch (err) {
         console.log(err)
         res.json(new CustomError(err.status, err.message))
+    } finally {
+        startMiddleware('run-app')
     }
 }
 
@@ -152,11 +153,12 @@ module.exports.createCOMMeter = async (req, res) => {
             throw new CustomError(400, "undefined type")
         }
 
-        // startMiddleware('run-app')
         res.status(201).json({ status: 201, error: null, data: "Succesfull saved" })
     } catch (err) {
         console.log(err)
         res.json(new CustomError(err.status, err.message))
+    } finally {
+        startMiddleware('run-app')
     }
 }
 

@@ -285,7 +285,7 @@ const checkDate = async (meter) => {
         const result = Math.abs(datatime - new Date())
 
         if ((result / 1000) <= meter.time_difference) {
-            console.log('date o`tdi')
+            console.log('datetime tekshirildi previous ichida')
             return 'ok'
         } else {
             return
@@ -296,41 +296,52 @@ const checkDate = async (meter) => {
     }
 };
 
+let queue = []
 module.exports.previousCheking = async () => {
     return new Promise(async (resolve, reject) => {
         try {
             const previous = await filterPrevious()
             console.log(previous, 'previous')
             if (previous.length) {
-                for (let i = 0; i < previous.length; i++) {
-                    const meter = await repositories().meterRepository().findOne(previous[i].meter_id)
-
-                    const date = await checkDate(meter)
-                    if (date) {
-                        if (previous[i].archive - yesterday < 0) {
-                            console.log('archive boshlandi')
-                            await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
-                                await archiveFill(meter, previous[i].archive).then(async () => {
-                                    await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
+                if(!previous.some((e) => e.status)) {
+                    for (let i = 0; i < previous.length; i++) {
+                        const meter = await repositories().meterRepository().findOne(previous[i].meter_id)
+    
+                        const date = await checkDate(meter)
+                        if (date) {
+                            if (previous[i].archive - yesterday < 0) {
+                                console.log('archive boshlandi')
+                                await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
+                                    await archiveFill(meter, previous[i].archive).then(async () => {
+                                        await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
+                                    })
                                 })
-                            })
-                        }
-                        if (previous[i].billing - yesterday < 0) {
-                            console.log('billing boshlandi')
-                            await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
-                                await billingFill(meter, previous[i].billing).then(async () => {
-                                    await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
+                            }
+                            if (previous[i].billing - yesterday < 0) {
+                                console.log('billing boshlandi')
+                                await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
+                                    await billingFill(meter, previous[i].billing).then(async () => {
+                                        await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
+                                    })
                                 })
-                            })
+                            }
                         }
                     }
+                } else {
+                    queue.push(1)
                 }
-                resolve('finish')
-            } else {
-                resolve('OK')
             }
         } catch (error) {
             console.log(error)
+        } finally {
+            if(!queue.length) {
+                resolve('OK')
+            } else {
+                await this.previousCheking().then(() => {
+                    queue = []
+                    resolve('OK')
+                })
+            }
         }
     })
 }
