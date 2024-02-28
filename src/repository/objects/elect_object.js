@@ -148,7 +148,7 @@ module.exports.electObjectRepository = () => {
             const realtimeDocuments = await electObjectModel.aggregate(electObjectPipelines)
 
             const realTimeData = { date: new Date(), "AP": "0", "RP": "0", "FP": "0", "CP": "0" }
-            realtimeDocuments[0].parameters.map(e => {
+            realtimeDocuments[0]?.parameters?.map(e => {
                 if (e.param_details.param_short_name == realTimeVariable[0]) {
                     realTimeData.AP = e.parameter_values[0].value
                 } else if (e.param_details.param_short_name == realTimeVariable[1]) {

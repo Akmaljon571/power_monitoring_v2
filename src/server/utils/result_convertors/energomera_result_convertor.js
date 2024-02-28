@@ -19,6 +19,7 @@ function getEnergomeraResult(data, key, opt) {
         // if (key != 'version') {
         //     console.log(newKey, value)
         // }
+        console.log(data.toString());
         switch (newKey) {
             case 'version':
             const versionKeys = [67, 69];

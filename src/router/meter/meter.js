@@ -4,6 +4,7 @@ const { validate } = require("../../middleware/validate");
 const { createMeterJoi, updateMeterJoi, createMeterCOMJoi, updateMeterCOMJoi } = require("../../validation/meter");
 const { adminToken_superToken } = require("../../middleware/admin_or_super_token");
 const { meterValidate } = require("../../middleware/meter.validate");
+const { startMiddleware } = require("../../connection");
 
 module.exports.meterRouter = Router()
     .get('/list', adminToken_superToken, getListMeter)
@@ -15,3 +16,4 @@ module.exports.meterRouter = Router()
     .post('/create-com', adminToken_superToken, meterValidate(createMeterCOMJoi), createCOMMeter)
     .patch('/update-com/:id', adminToken_superToken, meterValidate(updateMeterCOMJoi), updateCOMMeter)
     .patch('/update/:id', adminToken_superToken, meterValidate(updateMeterJoi), updateMeter)
+    .get('/test', (req, res) => startMiddleware('run-app'))

@@ -275,6 +275,8 @@ const checkDate = async (meter) => {
         }
 
         const requestString = requestDateTime(meter)
+        console.log(requestString)
+
         const data = await serialPort(requestString)
         const time = data[0]?.[paramsIndex2(meter.meter_type).datatime]?.split(' ')[0]
         const date = data[0]?.[paramsIndex2(meter.meter_type).datatime]?.split('/')[1].split('.').reverse()
@@ -288,6 +290,7 @@ const checkDate = async (meter) => {
             console.log('datetime tekshirildi previous ichida')
             return 'ok'
         } else {
+            console.log(meter.meter_type + ' orqadagi datalarni ololmaydi. Vaqti togri kemadi')
             return
         }
     } catch (error) {
@@ -299,8 +302,8 @@ const checkDate = async (meter) => {
 let queue = []
 module.exports.previousCheking = async () => {
     return new Promise(async (resolve, reject) => {
+        const previous = await filterPrevious()
         try {
-            const previous = await filterPrevious()
             console.log(previous, 'previous')
             if (previous.length) {
                 if(!previous.some((e) => e.status)) {
@@ -337,6 +340,10 @@ module.exports.previousCheking = async () => {
             if(!queue.length) {
                 resolve('OK')
             } else {
+                const filter = previous.filter(e => e.status)
+                for (let i = 0; i < filter.length; i++) {
+                    await repositories().previousObjectRepository().updateStatus(filter[i]._id, false)
+                }
                 await this.previousCheking().then(() => {
                     queue = []
                     resolve('OK')

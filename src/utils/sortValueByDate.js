@@ -1,5 +1,4 @@
-const { all_short_name } = require("../global/file-path")
-const { vectorMultiplyVoltage, vectorMultiplyCurrent } = require("../global/variable")
+const { allMultiply, vectorMultiplyTN, vectorMultiplyTT } = require("../global/variable")
 const CustomError = require("./custom_error")
 
 module.exports.sortvalueObjectsForVectorDiagram = async (parameters, query) => {
@@ -237,16 +236,14 @@ module.exports.sortvalueObjectsForList = async (parameters, type) => {
     }
 }
 
-const parameterShortNamesList = all_short_name()
-
 function multiplyTcAndTT(multiply, name, valueObject) {
-    if (parameterShortNamesList.includes(name)) {
+    if (allMultiply.includes(name)) {
         multiply.map(element => valueObject.value = Math.round(valueObject.value * element * 1000) / 1000)
-    } else if (vectorMultiplyVoltage.includes(name)) {
+    } else if (vectorMultiplyTN.includes(name)) {
         if (multiply && multiply[1]) {
             valueObject.value = Math.round(valueObject.value * multiply[1] * 1000) / 1000
         }
-    } else if (vectorMultiplyCurrent.includes(name)) {
+    } else if (vectorMultiplyTT.includes(name)) {
         if (multiply && multiply[0]) {
             valueObject.value = Math.round(valueObject.value * multiply[0] * 1000) / 1000
         }

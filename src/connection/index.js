@@ -7,16 +7,26 @@ const { requestBilling, requestArchive, requestDateTime, requestCurrent } = requ
 
 let bool = true
 let sendMessageFN
+let loading = false
+let queueList = []
 
 module.exports.startMiddleware = async (status, sendMessage=sendMessageFN) => {
+    sendMessageFN = sendMessage
     const meters = await repositories().meterRepository().findAll({ subquery: { parameter_type: "current" } })
     if (status === 'run-app') {
-        bool = false
-        await previousCheking()
+        if(!loading) {
+            bool = false
+            await previousCheking()
+        } else {
+            console.log('Navbatlar royxatiga tushdi')
+            queueList.push(1)
+        }
     }
 
     bool = true
-    await getDataFromMiddleware(meters, sendMessage)
+    if(!loading) {
+        await getDataFromMiddleware(meters, sendMessage)
+    }
 }
 
 const getDataFromMiddleware = async (meters, sendMessage) => {
@@ -29,10 +39,22 @@ const getDataFromMiddleware = async (meters, sendMessage) => {
                         parameterIds.push(`${param.channel_full_id}`)
                     }
                 })
-                await checkDate(meters[i], parameterIds, sendMessage).then(console.log)
+                if(queueList.length) {
+                    queueList = []
+                    await this.startMiddleware('run-app', sendMessage)
+                    return
+                }
+                loading = true
+                await checkDate(meters[i], parameterIds, sendMessage).then(() => loading = false)
             }
             if(meters.length) {
-                await getDataFromMiddleware(meters, sendMessage)
+                if(queueList.length) {
+                    queueList = []
+                    await this.startMiddleware('run-app', sendMessage)
+                    return
+                } else {
+                    await getDataFromMiddleware(meters, sendMessage)
+                }
             }
         }
     } catch (err) {
@@ -58,7 +80,9 @@ const checkDate = async (meter, parameterIds, sendMessage) => {
                 }
 
                 const requestString = requestDateTime(meter)
+                console.log(requestString)
                 const data = await serialPort(requestString)
+                console.log(data)
 
                 const time = data[0]?.[paramsIndex2(meter.meter_type).datatime]?.split(' ')[0]
                 const date = data[0]?.[paramsIndex2(meter.meter_type).datatime]?.split('/')[1].split('.').reverse()
@@ -94,9 +118,11 @@ const checkDate = async (meter, parameterIds, sendMessage) => {
 
             resolve('ok')
         } catch (error) {
-            console.log(error)
+            console.log(error, '___________________________________________________________ Aynan meni errorim')
             sendMessage(meter._id, 'Error', 'date')
-            resolve('error')
+            setTimeout(() => {
+                resolve('error')
+            }, 30000);
         }
     });
 };
@@ -346,6 +372,7 @@ const currentData = async (meter, list, sendMessage) => {
             let newJournalDocument = await repositories().journalRepository().insert(journalParameter)
 
             const requestString = requestCurrent(meter, list)
+            console.log(requestString)
 
             const data = await serialPort(requestString)
 

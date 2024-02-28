@@ -67,3 +67,15 @@ module.exports.getRealTime = async (req, res) => {
         res.status(error.status).json({ status: error.status, error: error.message, data: null })
     }
 }
+
+module.exports.getRealTimeReport = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        const data = await repositories().calculationObjectRepository().realTime(id)
+        res.status(200).json({ status: 200, error: null, data })
+    } catch (error) {
+        console.log(error)
+        res.status(error.status).json({ status: error.status, error: error.message, data: null })
+    }
+}
