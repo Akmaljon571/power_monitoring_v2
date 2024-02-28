@@ -1,8 +1,8 @@
 const { paramsIndex2 } = require("../global/file-path");
 const { energyarchive } = require("../global/variable");
 const { repositories } = require("../repository");
-const { serialPort } = require("../server/utils/serialport/serialport");
 const { requestBilling, requestArchive, requestDateTime } = require("./request");
+const serialPort = require("../server");
 
 const yesterday = new Date();
 yesterday.setUTCHours(0, 0, 0, 0)
@@ -71,6 +71,8 @@ const archiveFill = async (meter, oldDate) => {
         }
 
         async function saveData(data) {
+            console.log(data)
+
             const dateTime = (date) => {
                 const [day, month, year, hours, minutes] = date.split(/[^\d]+/);
                 return new Date(`20${year}`, month - 1, day, hours, minutes)
@@ -135,6 +137,7 @@ const archiveFill = async (meter, oldDate) => {
         return 'ok'
     } catch (error) {
         console.log(error, 'dfsetf')
+        return 'error'
     }
 }
 
@@ -178,6 +181,8 @@ const billingFill = async (meter, oldDate) => {
         }
 
         async function saveData(data) {
+            console.log(data)
+
             const valueList = []
 
             data.map(e => {
@@ -265,6 +270,7 @@ const billingFill = async (meter, oldDate) => {
         return 'ok'
     } catch (error) {
         console.log(error)
+        return 'error'
     }
 }
 
@@ -306,49 +312,47 @@ module.exports.previousCheking = async () => {
         try {
             console.log(previous, 'previous')
             if (previous.length) {
-                if(!previous.some((e) => e.status)) {
+                console.log(previous.map((e) => e.status))
+                if (!previous.some((e) => e.status)) {
                     for (let i = 0; i < previous.length; i++) {
                         const meter = await repositories().meterRepository().findOne(previous[i].meter_id)
-    
+                        await repositories().previousObjectRepository().updateStatus(previous[i]._id, true)
+
                         const date = await checkDate(meter)
                         if (date) {
                             if (previous[i].archive - yesterday < 0) {
                                 console.log('archive boshlandi')
-                                await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
-                                    await archiveFill(meter, previous[i].archive).then(async () => {
-                                        await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
-                                    })
-                                })
+                                await archiveFill(meter, previous[i].archive)
                             }
                             if (previous[i].billing - yesterday < 0) {
                                 console.log('billing boshlandi')
-                                await repositories().previousObjectRepository().updateStatus(previous[i]._id, true).then(async () => {
-                                    await billingFill(meter, previous[i].billing).then(async () => {
-                                        await repositories().previousObjectRepository().updateStatus(previous[i]._id, false)
-                                    })
-                                })
+                                await billingFill(meter, previous[i].billing)
                             }
                         }
                     }
+
+                    console.log(queue.length)
+                    const filter = previous.filter(e => e.status)
+                    for (let i = 0; i < filter.length; i++) {
+                        await repositories().previousObjectRepository().updateStatus(filter[i]._id, false)
+                    }
+                    if (!queue.length) {
+                        resolve('OK')
+                    } else {
+                        await this.previousCheking().then(() => {
+                            queue = []
+                            resolve('OK')
+                        })
+                    }
                 } else {
+                    console.log('Navbatlar royxatiga qo`shildi')
+                    resolve('loading')
                     queue.push(1)
                 }
             }
         } catch (error) {
             console.log(error)
-        } finally {
-            if(!queue.length) {
-                resolve('OK')
-            } else {
-                const filter = previous.filter(e => e.status)
-                for (let i = 0; i < filter.length; i++) {
-                    await repositories().previousObjectRepository().updateStatus(filter[i]._id, false)
-                }
-                await this.previousCheking().then(() => {
-                    queue = []
-                    resolve('OK')
-                })
-            }
+            resolve('ok')
         }
     })
 }
