@@ -29,3 +29,9 @@ module.exports.paramsIndex2 = (type) => {
     const data = JSON.parse(fs.readFileSync(filePath))
     return data[1]
 }
+
+module.exports.formatParamsList = () => {
+    const filePath = path.join(__dirname, '..', 'server', 'params', 'format_params.json')
+    const data = JSON.parse(fs.readFileSync(filePath))
+    return data
+}

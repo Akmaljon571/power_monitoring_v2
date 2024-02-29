@@ -5,6 +5,8 @@ module.exports = getEnergomeraResult
 
 function getEnergomeraResult(data, inputKey, opt) {
     try {
+        console.log(data,inputKey, opt)
+
         let { key, value } = unWrapObject(data)
         if (eneromeraObisEnum.includes(key)) {
             return verifyResponse(value, key, opt)
@@ -77,7 +79,7 @@ function createResultA_R(params) {
         let results = []
         
         for (const i of params) {
-            let {key, value} = unWrapObject(i.data)
+            let {key, value} = unWrapObject(i.data ? i.data : i)
             let [dateSum, ...tarifs] = extractorFunc(value.toString())
             let [date, sum] = dateSum.split(',')
             if (!sum) {
@@ -126,7 +128,7 @@ function getProfile(data) {
         console.log(data);
         const results = []
         for (const i of data) {
-            let {key, value} = unWrapObject(i.data)
+            let {key, value} = unWrapObject(i.data ? i.data : i)
             let extractedData = extractorFunc(value.toString())
             let currentTime = new Date()
             currentTime.setHours(0, 0, 0, 0)

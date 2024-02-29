@@ -10,12 +10,6 @@ const previousSchema = new mongoose.Schema({
         type: Date,
         required:true,
     },
-    status:{
-        type: Boolean,
-        required:true,
-        default: false
-    }
-    // Zapros ketvotimi? status:false
 })
 
 

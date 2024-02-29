@@ -18,13 +18,13 @@ module.exports.startMiddleware = async (status, sendMessage = sendMessageFN) => 
     if (status === 'run-app') {
         if (!loading) {
             bool = false
-            await previousCheking().then(e => {
-                if(e == 'loading') {
-                    loading = true
-                } else {
-                    loading = false
-                }
-            })
+            // await previousCheking().then(e => {
+            //     if(e == 'loading') {
+            //         loading = true
+            //     } else {
+            //         loading = false
+            //     }
+            // })
         } else {
             console.log('Navbatlar royxatiga tushdi')
             queueList.push(1)
@@ -33,7 +33,7 @@ module.exports.startMiddleware = async (status, sendMessage = sendMessageFN) => 
 
     bool = true
     if (!loading) {
-        await getDataFromMiddleware(meters, sendMessage)
+        // await getDataFromMiddleware(meters, sendMessage)
     }
 }
 

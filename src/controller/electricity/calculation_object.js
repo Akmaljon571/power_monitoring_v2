@@ -1,5 +1,6 @@
 const CustomError = require("../../utils/custom_error")
 const { repositories } = require("../../repository")
+const { formatParamsList } = require("../../global/file-path")
 
 module.exports.getElectricityObjectsCalculation = async(req, res) => {
    try {
@@ -17,6 +18,16 @@ module.exports.getSingleElectricityObjectCalculation = async(req, res) => {
       const { id } = req.params
       
       const objectDocument = await repositories().calculationObjectRepository().findOne(id)
+      if (!Object.keys(objectDocument).length) {
+         return res.status(200).json({ status: 200, error: null, data: {} })
+      }
+
+      const allData = objectDocument.parameters.map(e => e.param_details[0] || '')
+      const formatParams = formatParamsList()
+      const map = allData.map(e => e && e.channel_full_id.split('.').slice(0, 2).join('.')).filter(e => e)
+      const block = formatParams.indicators_block.filter(e => map.length && (map.includes(e.channel_full_id) || e.channel_full_id == '4.8'))
+      objectDocument.block = block
+
       res.status(200).json({ status: 200, error: null, data: objectDocument })
    } catch (err) {
       const error = new CustomError(err.status, err.message)

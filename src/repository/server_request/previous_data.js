@@ -1,11 +1,10 @@
 const { previousModel } = require("../../models")
 const CustomError = require("../../utils/custom_error")
 
-module.exports.previousObjectRepository = () =>{
+module.exports.previousObjectRepository = () => {
     return Object.freeze({
         insert,
         update,
-        updateStatus,
         findOne,
         findAll,
         updateLoop
@@ -14,8 +13,8 @@ module.exports.previousObjectRepository = () =>{
     async function insert(meter) {
         try {
             const date = new Date()
-            date.setUTCHours(0,0,0,0)
-            if(meter.data_polling_length) {
+            date.setUTCHours(0, 0, 0, 0)
+            if (meter.data_polling_length) {
                 date.setDate(new Date().getDate() - Number(meter.data_polling_length))
             }
             await previousModel.create({
@@ -29,7 +28,7 @@ module.exports.previousObjectRepository = () =>{
         }
     }
 
-    async function update(meter_id, archive='', billing='') {
+    async function update(meter_id, archive = '', billing = '') {
         try {
             const find = await previousModel.findOne({ meter_id })
 
@@ -42,7 +41,7 @@ module.exports.previousObjectRepository = () =>{
         }
     }
 
-    async function updateLoop(meter_id, archive='', billing='') {
+    async function updateLoop(meter_id, archive = '', billing = '') {
         try {
             const find = await previousModel.findOne({ meter_id })
             const dateFind = archive || billing
@@ -58,19 +57,8 @@ module.exports.previousObjectRepository = () =>{
         }
     }
 
-    async function updateStatus(_id, status) {
-        try {
-            await previousModel.updateOne(
-                { _id },
-                { $set: { status } }
-            )
-        } catch (error) {
-            throw new CustomError(error.status, error.message)
-        }
-    }
-
     async function findOne(meter_id) {
-        return await previousModel.findOne({ meter_id:meter_id })
+        return await previousModel.findOne({ meter_id: meter_id })
     }
 
     async function findAll() {

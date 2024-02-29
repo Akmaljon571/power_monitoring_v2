@@ -306,17 +306,18 @@ const checkDate = async (meter) => {
 };
 
 let queue = []
+let loading = false
 module.exports.previousCheking = async () => {
     return new Promise(async (resolve, reject) => {
         const previous = await filterPrevious()
         try {
             console.log(previous, 'previous')
             if (previous.length) {
-                console.log(previous.map((e) => e.status))
-                if (!previous.some((e) => e.status)) {
+                if (!loading) {
+                    loading = true
+
                     for (let i = 0; i < previous.length; i++) {
                         const meter = await repositories().meterRepository().findOne(previous[i].meter_id)
-                        await repositories().previousObjectRepository().updateStatus(previous[i]._id, true)
 
                         const date = await checkDate(meter)
                         if (date) {
@@ -331,11 +332,7 @@ module.exports.previousCheking = async () => {
                         }
                     }
 
-                    console.log(queue.length)
-                    const filter = previous.filter(e => e.status)
-                    for (let i = 0; i < filter.length; i++) {
-                        await repositories().previousObjectRepository().updateStatus(filter[i]._id, false)
-                    }
+                    loading = false
                     if (!queue.length) {
                         resolve('OK')
                     } else {
@@ -349,6 +346,8 @@ module.exports.previousCheking = async () => {
                     resolve('loading')
                     queue.push(1)
                 }
+            } else {
+                resolve('ok')
             }
         } catch (error) {
             console.log(error)

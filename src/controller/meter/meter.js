@@ -1,6 +1,6 @@
 const { SerialPort } = require('serialport')
 const { startMiddleware } = require("../../connection")
-const { paramsReadFile } = require("../../global/file-path")
+const { paramsReadFile, formatParamsList } = require("../../global/file-path")
 const { meterListReadFile } = require("../../global/meter-list")
 const { repositories } = require("../../repository/index")
 const CustomError = require("../../utils/custom_error")
@@ -187,7 +187,15 @@ module.exports.paramsList = async (req, res) => {
     try {
         const { type } = req.params
 
-        res.status(200).json({ status: 200, error: null, data: paramsReadFile(type.toUpperCase()) })
+        const allParams = Object.keys(paramsReadFile(type.toUpperCase()))
+        const formatParams = formatParamsList()
+        const data = { indicators: [], indicators_block: [] }
+       
+        data.indicators = formatParams.indicators.filter(e => allParams.includes(e.param_short_name) || e.channel_full_id.startsWith('4.8'))
+        const map = data.indicators.map(e => e.channel_full_id.split('.').slice(0, 2).join('.'))
+        data.indicators_block = formatParams.indicators_block.filter(e => map.includes(e.channel_full_id) || e.channel_full_id == '4.8')
+
+        res.status(200).json({ status: 200, error: null, data })
     } catch (err) {
         const error = new CustomError(err.status, err.message)
         res.status(error.status).json({ status: error.status, error: error.message, data: null })
